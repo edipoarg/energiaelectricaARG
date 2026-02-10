@@ -7,8 +7,10 @@ Este proyecto es un dashboard para analizar datos de generación eléctrica de A
 Para evitar problemas de CORS/CDN, serví el sitio con un server local:
 
 ```bash
-uv run -m http.server
+uv run -m http.server  
 ```
+
+y luego abrí http://localhost:8000 en tu navegador. 
 
 ## Datos y transformación
 
@@ -29,9 +31,10 @@ La transformación que hacemos es:
 - Completar geolocalización y metadatos (`lon`, `lat`, `geo_*`) usando el último `oferta_grupos.csv` como lookup por `maquina`.
 - Completar `potencia_instalada` usando la base de autogeneradores cuando aplica.
 
-## Actualización de datos
+### Actualización de datos
 
-Se incluye un script en `scripts/update_csvs.py` que regenera ambos CSV:
+Se incluye un script en `scripts/update_csvs.py` que regenera ambos CSV a partir de [los datasets 
+de informe mensual de Cammesa](https://cammesaweb.cammesa.com/informe-sintesis-mensual/)
 
 ```bash
 uv run scripts/update_csvs.py <ruta-a-zip-o-carpeta>
