@@ -154,18 +154,16 @@
                 <h1 class="h3 mb-2">Mercado de generación de energía</h1>
                 <p class="text-muted mb-0">
                     Explorá los datos públicos de CAMMESA y el MEM para entender
-                    cómo se distribuye la generación neta, la potencia
-                    instalada y la ubicación de las máquinas geolocalizadas por
-                    grupo económico, tecnología, región y más.
+                    cómo se distribuye la generación neta, la potencia instalada
+                    y la ubicación de las máquinas geolocalizadas por grupo
+                    económico, tecnología, región y más.
                 </p>
             </div>
 
             <div class="card p-3 mb-4">
                 <div class="row g-3 align-items-end">
                     <div class="col-12 col-md-2">
-                        <label for="filterAno" class="filter-label"
-                            >Año</label
-                        >
+                        <label for="filterAno" class="filter-label">Año</label>
                         <div class="multiselect" data-filter-field="ano">
                             <button
                                 id="filterAno"
@@ -487,1043 +485,1079 @@
             crossorigin=""
         ></script>
         <script>
-            const filters = {
-                ano: [],
-                grupo_economico: [],
-                region: [],
-                provincia: [],
-                tipo_maquina: [],
-                tecnologia: [],
-                fuente_generacion: [],
-            };
-            const multiSelectState = {};
-            const filterParamKeys = {
-                ano: "an",
-                grupo_economico: "ge",
-                region: "rg",
-                provincia: "pr",
-                tipo_maquina: "tm",
-                tecnologia: "te",
-                fuente_generacion: "fg",
-            };
-            const metricParamKey = "mt";
-            let isRestoringStateFromUrl = false;
-
-            const filterConfig = [
-                { id: "filterAno", field: "ano", label: "Año" },
-                {
-                    id: "filterGrupo",
-                    field: "grupo_economico",
-                    label: "Grupo económico",
-                },
-                { id: "filterRegion", field: "region", label: "Región" },
-                {
-                    id: "filterProvincia",
-                    field: "provincia",
-                    label: "Provincia",
-                },
-                {
-                    id: "filterTipo",
-                    field: "tipo_maquina",
-                    label: "Tipo de máquina",
-                },
-                {
-                    id: "filterTecnologia",
-                    field: "tecnologia",
-                    label: "Tecnología",
-                },
-                {
-                    id: "filterFuente",
-                    field: "fuente_generacion",
-                    label: "Fuente",
-                },
-            ];
-
-            const provinceCentroids = {
-                "BUENOS AIRES": { lat: -36.25, lon: -60.15 },
-                CATAMARCA: { lat: -27.27, lon: -66.35 },
-                CHACO: { lat: -26.5, lon: -60.5 },
-                CHUBUT: { lat: -43.7, lon: -67.5 },
-                CORDOBA: { lat: -32.1, lon: -64.3 },
-                CORRIENTES: { lat: -28.7, lon: -58.8 },
-                "ENTRE RIOS": { lat: -32.0, lon: -59.4 },
-                FORMOSA: { lat: -25.7, lon: -59.1 },
-                JUJUY: { lat: -23.3, lon: -65.0 },
-                "LA PAMPA": { lat: -37.5, lon: -65.0 },
-                "LA RIOJA": { lat: -29.5, lon: -67.0 },
-                MENDOZA: { lat: -34.6, lon: -68.3 },
-                MISIONES: { lat: -26.8, lon: -54.9 },
-                NEUQUEN: { lat: -38.6, lon: -70.1 },
-                "RIO NEGRO": { lat: -40.8, lon: -67.8 },
-                SALTA: { lat: -24.8, lon: -65.4 },
-                "SAN JUAN": { lat: -30.9, lon: -68.8 },
-                "SAN LUIS": { lat: -33.3, lon: -66.3 },
-                "SANTA CRUZ": { lat: -48.8, lon: -69.3 },
-                "SANTA FE": { lat: -31.3, lon: -60.7 },
-                "SGO.DEL ESTERO": { lat: -27.8, lon: -64.3 },
-                TUCUMAN: { lat: -26.9, lon: -65.2 },
-            };
-
-            const technologyLabels = {
-                CC: "Ciclo combinado",
-                HI: "Hidroeléctrica",
-                "HI<50": "Hidroeléctrica <=50 MW",
-                "HI>50": "Hidroeléctrica >50 MW",
-                BIOG: "Biogás",
-                BIOM: "Biomasa",
-                SOL: "Solar",
-                EOL: "Eólica",
-                NUC: "Nuclear",
-                DI: "Diésel",
-                TG: "Turbogás",
-                TV: "Turbovapor",
-            };
-
-            function expandTechnologyLabel(value) {
-                if (!value || value === "Sin dato") return value;
-                const key = value.toString().trim().toUpperCase();
-                return technologyLabels[key] || value;
-            }
-
-            function normalizeProvince(name) {
-                return (name || "").toString().trim().toUpperCase();
-            }
-
-            function hashString(str) {
-                let hash = 0;
-                for (let i = 0; i < str.length; i += 1) {
-                    hash = (hash << 5) - hash + str.charCodeAt(i);
-                    hash |= 0;
-                }
-                return hash || 1;
-            }
-
-            function getFallbackLocation(provincia, key) {
-                const centroid =
-                    provinceCentroids[normalizeProvince(provincia)];
-                if (!centroid) return null;
-                const hash = hashString(`${key}|${provincia}`);
-                const jitterLat = Math.sin(hash) * 0.35;
-                const jitterLon = Math.cos(hash) * 0.35;
-                return {
-                    lat: centroid.lat + jitterLat,
-                    lon: centroid.lon + jitterLon,
+                const filters = {
+                    ano: [],
+                    grupo_economico: [],
+                    region: [],
+                    provincia: [],
+                    tipo_maquina: [],
+                    tecnologia: [],
+                    fuente_generacion: [],
                 };
-            }
+                const multiSelectState = {};
+                const filterParamKeys = {
+                    ano: "an",
+                    grupo_economico: "ge",
+                    region: "rg",
+                    provincia: "pr",
+                    tipo_maquina: "tm",
+                    tecnologia: "te",
+                    fuente_generacion: "fg",
+                };
+                const metricParamKey = "mt";
+                let isRestoringStateFromUrl = false;
 
-            const aggregationOptions = [
-                { value: "grupo_economico", label: "Grupo económico" },
-                { value: "region", label: "Región" },
-                { value: "provincia", label: "Provincia" },
-                { value: "tipo_maquina", label: "Tipo de máquina" },
-                { value: "tecnologia", label: "Tecnología" },
-                { value: "fuente_generacion", label: "Fuente de generación" },
-            ];
+                const filterConfig = [
+                    { id: "filterAno", field: "ano", label: "Año" },
+                    {
+                        id: "filterGrupo",
+                        field: "grupo_economico",
+                        label: "Grupo económico",
+                    },
+                    { id: "filterRegion", field: "region", label: "Región" },
+                    {
+                        id: "filterProvincia",
+                        field: "provincia",
+                        label: "Provincia",
+                    },
+                    {
+                        id: "filterTipo",
+                        field: "tipo_maquina",
+                        label: "Tipo de máquina",
+                    },
+                    {
+                        id: "filterTecnologia",
+                        field: "tecnologia",
+                        label: "Tecnología",
+                    },
+                    {
+                        id: "filterFuente",
+                        field: "fuente_generacion",
+                        label: "Fuente",
+                    },
+                ];
 
-            const aggregationSelect =
-                document.getElementById("aggregationField");
-            aggregationOptions.forEach((opt) => {
-                const option = document.createElement("option");
-                option.value = opt.value;
-                option.textContent = opt.label;
-                aggregationSelect.appendChild(option);
-            });
-            aggregationSelect.value = "grupo_economico";
+                const provinceCentroids = {
+                    "BUENOS AIRES": { lat: -36.25, lon: -60.15 },
+                    CATAMARCA: { lat: -27.27, lon: -66.35 },
+                    CHACO: { lat: -26.5, lon: -60.5 },
+                    CHUBUT: { lat: -43.7, lon: -67.5 },
+                    CORDOBA: { lat: -32.1, lon: -64.3 },
+                    CORRIENTES: { lat: -28.7, lon: -58.8 },
+                    "ENTRE RIOS": { lat: -32.0, lon: -59.4 },
+                    FORMOSA: { lat: -25.7, lon: -59.1 },
+                    JUJUY: { lat: -23.3, lon: -65.0 },
+                    "LA PAMPA": { lat: -37.5, lon: -65.0 },
+                    "LA RIOJA": { lat: -29.5, lon: -67.0 },
+                    MENDOZA: { lat: -34.6, lon: -68.3 },
+                    MISIONES: { lat: -26.8, lon: -54.9 },
+                    NEUQUEN: { lat: -38.6, lon: -70.1 },
+                    "RIO NEGRO": { lat: -40.8, lon: -67.8 },
+                    SALTA: { lat: -24.8, lon: -65.4 },
+                    "SAN JUAN": { lat: -30.9, lon: -68.8 },
+                    "SAN LUIS": { lat: -33.3, lon: -66.3 },
+                    "SANTA CRUZ": { lat: -48.8, lon: -69.3 },
+                    "SANTA FE": { lat: -31.3, lon: -60.7 },
+                    "SGO.DEL ESTERO": { lat: -27.8, lon: -64.3 },
+                    TUCUMAN: { lat: -26.9, lon: -65.2 },
+                };
 
-            const summarySpan = document.getElementById("summary");
-            const mapCounterSpan = document.getElementById("mapCounter");
-            const mapNote = document.getElementById("mapNote");
-            const chartCaption = document.getElementById("chartCaption");
-            const chartTitle = document.getElementById("chartTitle");
-            const resetButton = document.getElementById("resetFilters");
-            let availableYears = [];
+                const technologyLabels = {
+                    CC: "Ciclo combinado",
+                    HI: "Hidroeléctrica",
+                    "HI<50": "Hidroeléctrica <=50 MW",
+                    "HI>50": "Hidroeléctrica >50 MW",
+                    BIOG: "Biogás",
+                    BIOM: "Biomasa",
+                    SOL: "Solar",
+                    EOL: "Eólica",
+                    NUC: "Nuclear",
+                    DI: "Diésel",
+                    TG: "Turbogás",
+                    TV: "Turbovapor",
+                };
 
-            const numberFormatter = new Intl.NumberFormat("es-AR", {
-                maximumFractionDigits: 0,
-            });
-            const energyFormatter = new Intl.NumberFormat("es-AR", {
-                maximumFractionDigits: 0,
-            });
-
-            const metricOptions = [
-                {
-                    value: "generacion",
-                    label: "Generación neta (MWh)",
-                    unit: "MWh",
-                    chartTitle: "Generación neta agregada",
-                    summarySuffix: "generados",
-                    format: (value) =>
-                        energyFormatter.format(Math.round(Math.max(0, value))),
-                    accessor: (machine) =>
-                        Math.max(0, machine.generacion_total || 0),
-                },
-                {
-                    value: "potencia",
-                    label: "Potencia instalada (MW)",
-                    unit: "MW",
-                    chartTitle: "Potencia instalada agregada",
-                    summarySuffix: "instalados",
-                    format: (value) =>
-                        numberFormatter.format(Math.round(Math.max(0, value))),
-                    accessor: (machine) =>
-                        Math.max(0, machine.potencia_instalada || 0),
-                },
-            ];
-            const metricSelect = document.getElementById("metricField");
-            metricOptions.forEach((opt) => {
-                const option = document.createElement("option");
-                option.value = opt.value;
-                option.textContent = opt.label;
-                metricSelect.appendChild(option);
-            });
-            metricSelect.value = metricOptions[0].value;
-            let currentMetric = metricOptions[0];
-            if (chartTitle) {
-                chartTitle.textContent = currentMetric.chartTitle;
-            }
-
-            function setCurrentMetric(value) {
-                const match = metricOptions.find((opt) => opt.value === value);
-                currentMetric = match || metricOptions[0];
-                metricSelect.value = currentMetric.value;
-            }
-
-            function getMetricValue(item) {
-                if (!item) return 0;
-                return currentMetric.accessor(item);
-            }
-
-            function formatMetricValue(value) {
-                return currentMetric.format(value || 0);
-            }
-
-            const colorCache = new Map();
-            const strokeColorCache = new Map();
-            const basePalette = [
-                "#e63946",
-                "#ff9f1c",
-                "#95c623",
-                "#33658a",
-                "#6a4c93",
-                "#00a8e8",
-                "#f28482",
-                "#edae49",
-                "#06d6a0",
-                "#40916c",
-                "#f4a261",
-                "#8d99ae",
-                "#ff70a6",
-                "#ff9770",
-                "#70d6ff",
-                "#1b998b",
-                "#c77dff",
-                "#4cc9f0",
-                "#ffba08",
-                "#3a86ff",
-                "#577590",
-                "#f25f5c",
-                "#1982c4",
-                "#8338ec",
-                "#4ecdc4",
-                "#ffbd00",
-            ];
-            let colorSequenceIndex = 0;
-
-            function nextPaletteColor() {
-                if (colorSequenceIndex < basePalette.length) {
-                    const precomputed = basePalette[colorSequenceIndex];
-                    colorSequenceIndex += 1;
-                    return precomputed;
+                function expandTechnologyLabel(value) {
+                    if (!value || value === "Sin dato") return value;
+                    const key = value.toString().trim().toUpperCase();
+                    return technologyLabels[key] || value;
                 }
-                const hue = (colorSequenceIndex * 137.508) % 360;
-                const saturation = 65;
-                const lightness = 48 + ((colorSequenceIndex % 4) - 1) * 8;
-                colorSequenceIndex += 1;
-                return `hsl(${hue}, ${saturation}%, ${Math.max(30, Math.min(65, lightness))}%)`;
-            }
 
-            function getColorForCategory(value) {
-                const safeValue =
-                    value === undefined || value === null
-                        ? ""
-                        : String(value);
-                const key = safeValue.trim() ? safeValue.trim() : "Sin dato";
-                if (colorCache.has(key)) return colorCache.get(key);
-                const color = nextPaletteColor();
-                colorCache.set(key, color);
-                return color;
-            }
-
-            function getStrokeColor(fillColor) {
-                if (!fillColor) return "#1f2937";
-                if (strokeColorCache.has(fillColor))
-                    return strokeColorCache.get(fillColor);
-                const parsed = d3.color(fillColor);
-                if (!parsed) {
-                    strokeColorCache.set(fillColor, "#1f2937");
-                    return "#1f2937";
+                function normalizeProvince(name) {
+                    return (name || "").toString().trim().toUpperCase();
                 }
-                const darker = parsed.darker(0.8).formatHex();
-                strokeColorCache.set(fillColor, darker);
-                return darker;
-            }
 
-            const markerBaseStyle = {
-                weight: 1,
-                opacity: 0.85,
-                fillOpacity: 0.6,
-            };
-
-            let machines = [];
-            let map;
-            let markersLayer;
-            const markerRefs = new Map();
-            let persistentHighlightConfig = null;
-            let hoverHighlightSet = null;
-
-            init();
-
-            function init() {
-                createMap();
-                d3.csv("oferta_grupos.csv", parseRow).then((rows) => {
-                    machines = aggregateMachines(rows);
-                    availableYears = Array.from(
-                        new Set(
-                            rows
-                                .map((row) => row.ano)
-                                .filter((value) => Number.isFinite(value)),
-                        ),
-                    )
-                        .sort((a, b) => b - a)
-                        .map((value) => value.toString());
-                    populateFilters(machines);
-                    applyStateFromURL();
-                });
-            }
-
-            function parseRow(row) {
-                const parsed = { ...row };
-                parsed.ano = +row.ano || null;
-                parsed.generacion_neta = +row.generacion_neta || 0;
-                parsed.lon = row.lon ? +row.lon : null;
-                parsed.lat = row.lat ? +row.lat : null;
-                parsed.potencia_instalada = row.potencia_instalada
-                    ? +row.potencia_instalada
-                    : null;
-                return parsed;
-            }
-
-            function aggregateMachines(rows) {
-                const grouped = d3.group(rows, (d) => d.maquina);
-                return Array.from(grouped, ([maquina, items]) => {
-                    const sample = items[0];
-                    const rawProvince =
-                        (sample.provincia && sample.provincia.trim()) || "";
-                    const hasExactLocation =
-                        Number.isFinite(sample.lat) &&
-                        Number.isFinite(sample.lon);
-                    let lat = hasExactLocation ? sample.lat : null;
-                    let lon = hasExactLocation ? sample.lon : null;
-                    let isApproxLocation = false;
-                    if (!hasExactLocation && rawProvince) {
-                        const fallback = getFallbackLocation(
-                            rawProvince,
-                            maquina,
-                        );
-                        if (fallback) {
-                            lat = fallback.lat;
-                            lon = fallback.lon;
-                            isApproxLocation = true;
-                        }
+                function hashString(str) {
+                    let hash = 0;
+                    for (let i = 0; i < str.length; i += 1) {
+                        hash = (hash << 5) - hash + str.charCodeAt(i);
+                        hash |= 0;
                     }
-                    const pick = (field) => {
-                        const value = sample[field];
-                        if (value === undefined || value === null)
-                            return "Sin dato";
-                        const trimmed =
-                            typeof value === "string" ? value.trim() : value;
-                        return trimmed === "" ? "Sin dato" : trimmed;
-                    };
-                    const generationByYear = {};
-                    items.forEach((entry) => {
-                        const yearKey = Number.isFinite(entry.ano)
-                            ? entry.ano.toString()
-                            : "Sin dato";
-                        generationByYear[yearKey] =
-                            (generationByYear[yearKey] || 0) +
-                            (entry.generacion_neta || 0);
-                    });
-                    const generationTotal = Object.values(
-                        generationByYear,
-                    ).reduce((sum, value) => sum + value, 0);
-                    const rawTecnologia = pick("tecnologia");
-                    const expandedTecnologia = expandTechnologyLabel(
-                        rawTecnologia,
-                    );
-                    const geoTecnologiaValue = expandTechnologyLabel(
-                        sample.geo_tecnologia || rawTecnologia,
-                    );
+                    return hash || 1;
+                }
+
+                function getFallbackLocation(provincia, key) {
+                    const centroid =
+                        provinceCentroids[normalizeProvince(provincia)];
+                    if (!centroid) return null;
+                    const hash = hashString(`${key}|${provincia}`);
+                    const jitterLat = Math.sin(hash) * 0.35;
+                    const jitterLon = Math.cos(hash) * 0.35;
                     return {
-                        maquina,
-                        central: pick("central"),
-                        codigo_agente: pick("codigo_agente"),
-                        agente_descripcion: pick("agente_descripcion"),
-                        region: pick("region"),
-                        provincia: pick("provincia"),
-                        pais: pick("pais"),
-                        tipo_maquina: pick("tipo_maquina"),
-                        fuente_generacion: pick("fuente_generacion"),
-                        tecnologia: expandedTecnologia,
-                        categoria_hidraulica: pick("categoria_hidraulica"),
-                        categoria_region: pick("categoria_region"),
-                        grupo_economico: pick("grupo_economico"),
-                        lon,
-                        lat,
-                        geo_nombre:
-                            sample.geo_nombre || pick("agente_descripcion"),
-                        geo_tecnologia: geoTecnologiaValue,
-                        geo_nombre_age:
-                            sample.geo_nombre_age || pick("agente_descripcion"),
-                        potencia_instalada: sample.potencia_instalada || null,
-                        geo_sistema: sample.geo_sistema || "Sin dato",
-                        hasExactLocation,
-                        isApproxLocation,
-                        generacion_total: generationTotal,
-                        generacion_por_ano: generationByYear,
-                        registros: items.length,
+                        lat: centroid.lat + jitterLat,
+                        lon: centroid.lon + jitterLon,
                     };
+                }
+
+                const aggregationOptions = [
+                    { value: "grupo_economico", label: "Grupo económico" },
+                    { value: "region", label: "Región" },
+                    { value: "provincia", label: "Provincia" },
+                    { value: "tipo_maquina", label: "Tipo de máquina" },
+                    { value: "tecnologia", label: "Tecnología" },
+                    { value: "fuente_generacion", label: "Fuente de generación" },
+                ];
+
+                const aggregationSelect =
+                    document.getElementById("aggregationField");
+                aggregationOptions.forEach((opt) => {
+                    const option = document.createElement("option");
+                    option.value = opt.value;
+                    option.textContent = opt.label;
+                    aggregationSelect.appendChild(option);
                 });
-            }
+                aggregationSelect.value = "grupo_economico";
 
-            function sumGenerationForYears(machine, years) {
-                if (!years || years.length === 0)
-                    return machine.generacion_total;
-                const map = machine.generacion_por_ano || {};
-                return years.reduce(
-                    (sum, year) => sum + (map[year] || 0),
-                    0,
-                );
-            }
+                const summarySpan = document.getElementById("summary");
+                const mapCounterSpan = document.getElementById("mapCounter");
+                const mapNote = document.getElementById("mapNote");
+                const chartCaption = document.getElementById("chartCaption");
+                const chartTitle = document.getElementById("chartTitle");
+                const resetButton = document.getElementById("resetFilters");
+                let availableYears = [];
 
-            function populateFilters(data) {
-                filterConfig.forEach((cfg) => {
-                    let values = [];
-                    if (cfg.field === "ano") {
-                        values = availableYears.slice();
-                    } else {
-                        values = Array.from(
-                            new Set(
-                                data
-                                    .map((d) => d[cfg.field])
-                                    .filter((value) => value && value.trim()),
+                const numberFormatter = new Intl.NumberFormat("es-AR", {
+                    maximumFractionDigits: 0,
+                });
+                const energyFormatter = new Intl.NumberFormat("es-AR", {
+                    maximumFractionDigits: 0,
+                });
+
+                const metricOptions = [
+                    {
+                        value: "generacion",
+                        label: "Generación neta (MWh)",
+                        unit: "MWh",
+                        chartTitle: "Generación neta agregada",
+                        summarySuffix: "generados",
+                        format: (value) =>
+                            energyFormatter.format(Math.round(Math.max(0, value))),
+                        accessor: (machine) =>
+                            Math.max(0, machine.generacion_total || 0),
+                    },
+                    {
+                        value: "potencia",
+                        label: "Potencia instalada (MW)",
+                        unit: "MW",
+                        chartTitle: "Potencia instalada agregada",
+                        summarySuffix: "instalados",
+                        format: (value) =>
+                            numberFormatter.format(Math.round(Math.max(0, value))),
+                        accessor: (machine) =>
+                            Math.max(
+                                0,
+                                machine.potencia_filtrada ??
+                                    machine.potencia_instalada ||
+                                    0,
                             ),
-                        ).sort((a, b) => a.localeCompare(b, "es"));
+                    },
+                ];
+                const metricSelect = document.getElementById("metricField");
+                metricOptions.forEach((opt) => {
+                    const option = document.createElement("option");
+                    option.value = opt.value;
+                    option.textContent = opt.label;
+                    metricSelect.appendChild(option);
+                });
+                metricSelect.value = metricOptions[0].value;
+                let currentMetric = metricOptions[0];
+                if (chartTitle) {
+                    chartTitle.textContent = currentMetric.chartTitle;
+                }
+
+                function setCurrentMetric(value) {
+                    const match = metricOptions.find((opt) => opt.value === value);
+                    currentMetric = match || metricOptions[0];
+                    metricSelect.value = currentMetric.value;
+                }
+
+                function getMetricValue(item) {
+                    if (!item) return 0;
+                    return currentMetric.accessor(item);
+                }
+
+                function formatMetricValue(value) {
+                    return currentMetric.format(value || 0);
+                }
+
+                const colorCache = new Map();
+                const strokeColorCache = new Map();
+                const basePalette = [
+                    "#e63946",
+                    "#ff9f1c",
+                    "#95c623",
+                    "#33658a",
+                    "#6a4c93",
+                    "#00a8e8",
+                    "#f28482",
+                    "#edae49",
+                    "#06d6a0",
+                    "#40916c",
+                    "#f4a261",
+                    "#8d99ae",
+                    "#ff70a6",
+                    "#ff9770",
+                    "#70d6ff",
+                    "#1b998b",
+                    "#c77dff",
+                    "#4cc9f0",
+                    "#ffba08",
+                    "#3a86ff",
+                    "#577590",
+                    "#f25f5c",
+                    "#1982c4",
+                    "#8338ec",
+                    "#4ecdc4",
+                    "#ffbd00",
+                ];
+                let colorSequenceIndex = 0;
+
+                function nextPaletteColor() {
+                    if (colorSequenceIndex < basePalette.length) {
+                        const precomputed = basePalette[colorSequenceIndex];
+                        colorSequenceIndex += 1;
+                        return precomputed;
                     }
-                    buildMultiSelect(cfg, values);
-                });
+                    const hue = (colorSequenceIndex * 137.508) % 360;
+                    const saturation = 65;
+                    const lightness = 48 + ((colorSequenceIndex % 4) - 1) * 8;
+                    colorSequenceIndex += 1;
+                    return `hsl(${hue}, ${saturation}%, ${Math.max(30, Math.min(65, lightness))}%)`;
+                }
 
-                resetButton.addEventListener("click", () => {
-                    filterConfig.forEach((cfg) => {
-                        setMultiSelectSelections(cfg.field, []);
-                    });
-                    updateVisuals();
-                });
+                function getColorForCategory(value) {
+                    const safeValue =
+                        value === undefined || value === null
+                            ? ""
+                            : String(value);
+                    const key = safeValue.trim() ? safeValue.trim() : "Sin dato";
+                    if (colorCache.has(key)) return colorCache.get(key);
+                    const color = nextPaletteColor();
+                    colorCache.set(key, color);
+                    return color;
+                }
 
-                aggregationSelect.addEventListener("change", () => {
-                    updateVisuals();
-                });
-
-                metricSelect.addEventListener("change", () => {
-                    setCurrentMetric(metricSelect.value);
-                    updateVisuals();
-                });
-
-                document.addEventListener("click", (event) => {
-                    if (!event.target.closest(".multiselect")) {
-                        closeAllMultiSelects();
+                function getStrokeColor(fillColor) {
+                    if (!fillColor) return "#1f2937";
+                    if (strokeColorCache.has(fillColor))
+                        return strokeColorCache.get(fillColor);
+                    const parsed = d3.color(fillColor);
+                    if (!parsed) {
+                        strokeColorCache.set(fillColor, "#1f2937");
+                        return "#1f2937";
                     }
-                });
+                    const darker = parsed.darker(0.8).formatHex();
+                    strokeColorCache.set(fillColor, darker);
+                    return darker;
+                }
 
-                document.addEventListener("keydown", (event) => {
-                    if (event.key === "Escape") {
-                        closeAllMultiSelects();
-                    }
-                });
-            }
-
-            function buildMultiSelect(config, values) {
-                const toggle = document.getElementById(config.id);
-                if (!toggle) return;
-                const container = toggle.closest(".multiselect");
-                const optionsWrapper = container.querySelector(
-                    ".multiselect-options",
-                );
-                const selectAllBtn = container.querySelector(
-                    ".multiselect-select-all",
-                );
-                const clearBtn = container.querySelector(".multiselect-clear");
-                const labelEl = container.querySelector(".multiselect-label");
-
-                optionsWrapper.innerHTML = "";
-                const state = {
-                    field: config.field,
-                    toggle,
-                    container,
-                    labelEl,
-                    optionsWrapper,
-                    selectAllBtn,
-                    clearBtn,
-                    values,
-                    inputs: [],
+                const markerBaseStyle = {
+                    weight: 1,
+                    opacity: 0.85,
+                    fillOpacity: 0.6,
                 };
-                multiSelectState[config.field] = state;
 
-                values.forEach((value, index) => {
-                    const optionLabel = document.createElement("label");
-                    optionLabel.className = "multiselect-option";
-                    const input = document.createElement("input");
-                    input.type = "checkbox";
-                    input.id = `${config.id}_opt_${index}`;
-                    input.value = value;
-                    const text = document.createElement("span");
-                    text.textContent = value;
-                    optionLabel.appendChild(input);
-                    optionLabel.appendChild(text);
-                    optionsWrapper.appendChild(optionLabel);
-                    state.inputs.push(input);
-                    input.addEventListener("change", () =>
-                        handleCheckboxChange(state),
-                    );
-                });
+                let machines = [];
+                let map;
+                let markersLayer;
+                const markerRefs = new Map();
+                let persistentHighlightConfig = null;
+                let hoverHighlightSet = null;
 
-                toggle.addEventListener("click", (event) => {
-                    event.preventDefault();
-                    toggleMultiSelect(state);
-                });
+                init();
 
-                if (selectAllBtn) {
-                    selectAllBtn.addEventListener("click", (event) => {
-                        event.preventDefault();
-                        setMultiSelectSelections(state.field, state.values);
-                        updateVisuals();
+                function init() {
+                    createMap();
+                    d3.csv("oferta_grupos.csv", parseRow).then((rows) => {
+                        machines = aggregateMachines(rows);
+                        availableYears = Array.from(
+                            new Set(
+                                rows
+                                    .map((row) => row.ano)
+                                    .filter((value) => Number.isFinite(value)),
+                            ),
+                        )
+                            .sort((a, b) => b - a)
+                            .map((value) => value.toString());
+                        populateFilters(machines);
+                        applyStateFromURL();
                     });
                 }
 
-                if (clearBtn) {
-                    clearBtn.addEventListener("click", (event) => {
-                        event.preventDefault();
-                        setMultiSelectSelections(state.field, []);
-                        updateVisuals();
-                    });
+                function parseRow(row) {
+                    const parsed = { ...row };
+                    parsed.ano = +row.ano || null;
+                    parsed.generacion_neta = +row.generacion_neta || 0;
+                    parsed.lon = row.lon ? +row.lon : null;
+                    parsed.lat = row.lat ? +row.lat : null;
+                    parsed.potencia_instalada = row.potencia_instalada
+                        ? +row.potencia_instalada
+                        : null;
+                    return parsed;
                 }
 
-                updateMultiSelectLabel(state.field);
-            }
-
-            function handleCheckboxChange(state) {
-                filters[state.field] = state.inputs
-                    .filter((input) => input.checked)
-                    .map((input) => input.value);
-                updateMultiSelectLabel(state.field);
-                updateVisuals();
-            }
-
-            function setMultiSelectSelections(field, selectedValues) {
-                const state = multiSelectState[field];
-                if (!state) return;
-                const allowed = new Set(selectedValues);
-                state.inputs.forEach((input) => {
-                    input.checked = allowed.has(input.value);
-                });
-                filters[field] = state.inputs
-                    .filter((input) => input.checked)
-                    .map((input) => input.value);
-                updateMultiSelectLabel(field);
-            }
-
-            function updateMultiSelectLabel(field) {
-                const state = multiSelectState[field];
-                if (!state || !state.labelEl) return;
-                const selected = filters[field] || [];
-                if (selected.length === 0) {
-                    state.labelEl.textContent =
-                        field === "ano" ? "Todos" : "Todas";
-                } else if (selected.length === 1) {
-                    state.labelEl.textContent = selected[0];
-                } else if (selected.length <= 3) {
-                    state.labelEl.textContent = selected.join(", ");
-                } else {
-                    state.labelEl.textContent = `${selected.length} seleccionados`;
-                }
-            }
-
-            function toggleMultiSelect(state) {
-                const shouldOpen = !state.container.classList.contains("open");
-                closeAllMultiSelects();
-                if (shouldOpen) {
-                    state.container.classList.add("open");
-                    state.toggle.setAttribute("aria-expanded", "true");
-                }
-            }
-
-            function closeAllMultiSelects() {
-                Object.values(multiSelectState).forEach((state) => {
-                    state.container.classList.remove("open");
-                    state.toggle.setAttribute("aria-expanded", "false");
-                });
-            }
-
-            function applyStateFromURL() {
-                if (typeof window === "undefined") {
-                    updateVisuals();
-                    return;
-                }
-                const params = new URLSearchParams(window.location.search);
-                isRestoringStateFromUrl = true;
-                filterConfig.forEach((cfg) => {
-                    const paramKey = filterParamKeys[cfg.field];
-                    const raw = params.get(paramKey);
-                    const values = raw
-                        ? raw
-                              .split("|")
-                              .map((value) => value.trim())
-                              .filter(Boolean)
-                        : [];
-                    setMultiSelectSelections(cfg.field, values);
-                });
-                const aggParam = params.get("agg");
-                if (
-                    aggParam &&
-                    aggregationOptions.some((opt) => opt.value === aggParam)
-                ) {
-                    aggregationSelect.value = aggParam;
-                } else {
-                    aggregationSelect.value = "grupo_economico";
-                }
-                const metricParam = params.get(metricParamKey);
-                if (metricParam) {
-                    setCurrentMetric(metricParam);
-                } else {
-                    setCurrentMetric(metricOptions[0].value);
-                }
-                updateVisuals();
-                isRestoringStateFromUrl = false;
-                syncStateToURL();
-            }
-
-            function syncStateToURL() {
-                if (typeof window === "undefined") return;
-                if (isRestoringStateFromUrl) return;
-                const params = new URLSearchParams();
-                params.set("agg", aggregationSelect.value);
-                params.set(metricParamKey, currentMetric.value);
-                filterConfig.forEach((cfg) => {
-                    const values = filters[cfg.field];
-                    if (values && values.length) {
-                        params.set(
-                            filterParamKeys[cfg.field],
-                            values.join("|"),
+                function aggregateMachines(rows) {
+                    const grouped = d3.group(rows, (d) => d.maquina);
+                    return Array.from(grouped, ([maquina, items]) => {
+                        const sample = items[0];
+                        const rawProvince =
+                            (sample.provincia && sample.provincia.trim()) || "";
+                        const hasExactLocation =
+                            Number.isFinite(sample.lat) &&
+                            Number.isFinite(sample.lon);
+                        let lat = hasExactLocation ? sample.lat : null;
+                        let lon = hasExactLocation ? sample.lon : null;
+                        let isApproxLocation = false;
+                        if (!hasExactLocation && rawProvince) {
+                            const fallback = getFallbackLocation(
+                                rawProvince,
+                                maquina,
+                            );
+                            if (fallback) {
+                                lat = fallback.lat;
+                                lon = fallback.lon;
+                                isApproxLocation = true;
+                            }
+                        }
+                        const pick = (field) => {
+                            const value = sample[field];
+                            if (value === undefined || value === null)
+                                return "Sin dato";
+                            const trimmed =
+                                typeof value === "string" ? value.trim() : value;
+                            return trimmed === "" ? "Sin dato" : trimmed;
+                        };
+                        const generationByYear = {};
+                        const potenciaByYear = {};
+                        items.forEach((entry) => {
+                            const yearKey = Number.isFinite(entry.ano)
+                                ? entry.ano.toString()
+                                : "Sin dato";
+                            generationByYear[yearKey] =
+                                (generationByYear[yearKey] || 0) +
+                                (entry.generacion_neta || 0);
+                            if (Number.isFinite(entry.potencia_instalada)) {
+                                const current = potenciaByYear[yearKey] || 0;
+                                potenciaByYear[yearKey] = Math.max(
+                                    current,
+                                    entry.potencia_instalada,
+                                );
+                            }
+                        });
+                        const generationTotal = Object.values(
+                            generationByYear,
+                        ).reduce((sum, value) => sum + value, 0);
+                        const potenciaMax = Object.values(potenciaByYear).reduce(
+                            (max, value) => Math.max(max, value),
+                            sample.potencia_instalada || 0,
                         );
-                    }
-                });
-                const queryString = params.toString();
-                // Keep query strings concise (< ~2000 chars) by using terse keys and a compact delimiter.
-                const newUrl = `${
-                    window.location.pathname
-                }${queryString ? `?${queryString}` : ""}`;
-                const currentUrl = `${window.location.pathname}${window.location.search}`;
-                if (newUrl !== currentUrl) {
-                    window.history.replaceState(null, "", newUrl);
-                }
-            }
-
-            function getFilteredData() {
-                const activeYears = filters.ano || [];
-                return machines
-                    .map((machine) => {
-                        const generation = sumGenerationForYears(
-                            machine,
-                            activeYears,
+                        const rawTecnologia = pick("tecnologia");
+                        const expandedTecnologia = expandTechnologyLabel(
+                            rawTecnologia,
+                        );
+                        const geoTecnologiaValue = expandTechnologyLabel(
+                            sample.geo_tecnologia || rawTecnologia,
                         );
                         return {
-                            ...machine,
-                            generacion_total: generation,
+                            maquina,
+                            central: pick("central"),
+                            codigo_agente: pick("codigo_agente"),
+                            agente_descripcion: pick("agente_descripcion"),
+                            region: pick("region"),
+                            provincia: pick("provincia"),
+                            pais: pick("pais"),
+                            tipo_maquina: pick("tipo_maquina"),
+                            fuente_generacion: pick("fuente_generacion"),
+                            tecnologia: expandedTecnologia,
+                            categoria_hidraulica: pick("categoria_hidraulica"),
+                            categoria_region: pick("categoria_region"),
+                            grupo_economico: pick("grupo_economico"),
+                            lon,
+                            lat,
+                            geo_nombre:
+                                sample.geo_nombre || pick("agente_descripcion"),
+                            geo_tecnologia: geoTecnologiaValue,
+                            geo_nombre_age:
+                                sample.geo_nombre_age || pick("agente_descripcion"),
+                            potencia_instalada: potenciaMax || null,
+                            potencia_por_ano: potenciaByYear,
+                            geo_sistema: sample.geo_sistema || "Sin dato",
+                            hasExactLocation,
+                            isApproxLocation,
+                            generacion_total: generationTotal,
+                            generacion_por_ano: generationByYear,
+                            registros: items.length,
                         };
-                    })
-                    .filter((item) => {
-                        if (activeYears.length && item.generacion_total <= 0)
-                            return false;
-                        return Object.entries(filters).every(
-                            ([field, values]) => {
-                                if (field === "ano") return true;
-                                if (!values || values.length === 0) return true;
-                                return values.includes(item[field]);
-                            },
+                    });
+                }
+
+                function sumGenerationForYears(machine, years) {
+                    if (!years || years.length === 0)
+                        return machine.generacion_total;
+                    const map = machine.generacion_por_ano || {};
+                    return years.reduce(
+                        (sum, year) => sum + (map[year] || 0),
+                        0,
+                    );
+                }
+
+                function pickPowerForYears(machine, years) {
+                    if (!years || years.length === 0)
+                        return machine.potencia_instalada || 0;
+                    const map = machine.potencia_por_ano || {};
+                    const latest = years
+                        .map((year) => Number.parseInt(year, 10))
+                        .filter((year) => Number.isFinite(year))
+                        .sort((a, b) => b - a)[0];
+                    if (!latest) return machine.potencia_instalada || 0;
+                    const key = latest.toString();
+                    return map[key] || machine.potencia_instalada || 0;
+                }
+
+                function populateFilters(data) {
+                    filterConfig.forEach((cfg) => {
+                        let values = [];
+                        if (cfg.field === "ano") {
+                            values = availableYears.slice();
+                        } else {
+                            values = Array.from(
+                                new Set(
+                                    data
+                                        .map((d) => d[cfg.field])
+                                        .filter((value) => value && value.trim()),
+                                ),
+                            ).sort((a, b) => a.localeCompare(b, "es"));
+                        }
+                        buildMultiSelect(cfg, values);
+                    });
+
+                    resetButton.addEventListener("click", () => {
+                        filterConfig.forEach((cfg) => {
+                            setMultiSelectSelections(cfg.field, []);
+                        });
+                        updateVisuals();
+                    });
+
+                    aggregationSelect.addEventListener("change", () => {
+                        updateVisuals();
+                    });
+
+                    metricSelect.addEventListener("change", () => {
+                        setCurrentMetric(metricSelect.value);
+                        updateVisuals();
+                    });
+
+                    document.addEventListener("click", (event) => {
+                        if (!event.target.closest(".multiselect")) {
+                            closeAllMultiSelects();
+                        }
+                    });
+
+                    document.addEventListener("keydown", (event) => {
+                        if (event.key === "Escape") {
+                            closeAllMultiSelects();
+                        }
+                    });
+                }
+
+                function buildMultiSelect(config, values) {
+                    const toggle = document.getElementById(config.id);
+                    if (!toggle) return;
+                    const container = toggle.closest(".multiselect");
+                    const optionsWrapper = container.querySelector(
+                        ".multiselect-options",
+                    );
+                    const selectAllBtn = container.querySelector(
+                        ".multiselect-select-all",
+                    );
+                    const clearBtn = container.querySelector(".multiselect-clear");
+                    const labelEl = container.querySelector(".multiselect-label");
+
+                    optionsWrapper.innerHTML = "";
+                    const state = {
+                        field: config.field,
+                        toggle,
+                        container,
+                        labelEl,
+                        optionsWrapper,
+                        selectAllBtn,
+                        clearBtn,
+                        values,
+                        inputs: [],
+                    };
+                    multiSelectState[config.field] = state;
+
+                    values.forEach((value, index) => {
+                        const optionLabel = document.createElement("label");
+                        optionLabel.className = "multiselect-option";
+                        const input = document.createElement("input");
+                        input.type = "checkbox";
+                        input.id = `${config.id}_opt_${index}`;
+                        input.value = value;
+                        const text = document.createElement("span");
+                        text.textContent = value;
+                        optionLabel.appendChild(input);
+                        optionLabel.appendChild(text);
+                        optionsWrapper.appendChild(optionLabel);
+                        state.inputs.push(input);
+                        input.addEventListener("change", () =>
+                            handleCheckboxChange(state),
                         );
                     });
-            }
 
-            function updateVisuals() {
-                const filtered = getFilteredData();
-                const dimension = aggregationSelect.value;
-                if (
-                    persistentHighlightConfig &&
-                    persistentHighlightConfig.dimension !== dimension
-                ) {
-                    persistentHighlightConfig = null;
-                }
-                if (persistentHighlightConfig) {
-                    const updatedMatches = collectMatches(
-                        persistentHighlightConfig.value,
-                        dimension,
-                        filtered,
-                    );
-                    if (updatedMatches && updatedMatches.size) {
-                        persistentHighlightConfig.matches = updatedMatches;
-                    } else {
-                        persistentHighlightConfig = null;
-                    }
-                }
-                hoverHighlightSet = null;
-                chartTitle.textContent = currentMetric.chartTitle;
-                updateSummary(filtered);
-                renderMap(filtered, dimension);
-                renderBars(filtered, dimension);
-                applyHighlightStyles();
-                syncStateToURL();
-            }
-
-            function updateSummary(data) {
-                const totalMetric = d3.sum(data, (d) => getMetricValue(d));
-                const located = data.filter(
-                    (d) => Number.isFinite(d.lat) && Number.isFinite(d.lon),
-                );
-                const withGeo = located.length;
-                const exactCount = located.filter(
-                    (d) => d.hasExactLocation,
-                ).length;
-                const approxCount = located.filter(
-                    (d) => d.isApproxLocation,
-                ).length;
-                const totalMachines = data.length;
-                const approxInfo = approxCount
-                    ? ` + ${numberFormatter.format(approxCount)} aprox.`
-                    : "";
-                summarySpan.textContent = `${numberFormatter.format(totalMachines)} máquinas filtradas | ${numberFormatter.format(exactCount)} con coordenada oficial${approxInfo} | ${formatMetricValue(totalMetric)} ${currentMetric.unit} ${currentMetric.summarySuffix}`;
-                mapCounterSpan.textContent = withGeo
-                    ? `${withGeo} ubicadas (${numberFormatter.format(
-                          exactCount,
-                      )} exactas${approxCount ? `, ${approxCount} aprox.` : ""})`
-                    : "Sin geolocalización disponible";
-                mapNote.textContent = approxCount
-                    ? "Las máquinas sin coordenadas oficiales se ubican cerca del centroide provincial (posición aproximada)."
-                    : "";
-            }
-
-            function createMap() {
-                map = L.map("map", {
-                    preferCanvas: true,
-                    zoomControl: true,
-                }).setView([-38.5, -63], 4);
-                L.tileLayer(
-                    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                    {
-                        maxZoom: 12,
-                        attribution: "&copy; OpenStreetMap contributors",
-                    },
-                ).addTo(map);
-                markersLayer = L.layerGroup().addTo(map);
-            }
-
-            function renderMap(data, dimension) {
-                markersLayer.clearLayers();
-                markerRefs.clear();
-                const points = [];
-                const metricValues = data.map((item) => getMetricValue(item));
-                const maxMetric = d3.max(metricValues) || 1;
-                const valueScale = d3
-                    .scaleSqrt()
-                    .domain([0, maxMetric])
-                    .range([5, 26]);
-                data.forEach((item) => {
-                    if (
-                        !Number.isFinite(item.lat) ||
-                        !Number.isFinite(item.lon)
-                    )
-                        return;
-                    const categoryValue = getDimensionValue(item, dimension);
-                    const fillColor = getColorForCategory(categoryValue);
-                    const metricValue = getMetricValue(item);
-                    const radius =
-                        metricValue > 0 ? valueScale(metricValue) : 5;
-                    const markerStyle = {
-                        ...markerBaseStyle,
-                        radius,
-                        fillColor,
-                        color: getStrokeColor(fillColor),
-                    };
-                    const marker = L.circleMarker(
-                        [item.lat, item.lon],
-                        markerStyle,
-                    );
-                    marker.bindPopup(buildPopup(item));
-                    marker.addTo(markersLayer);
-                    markerRefs.set(item.maquina, {
-                        marker,
-                        item,
-                        color: fillColor,
-                        radius,
-                    });
-                    points.push([item.lat, item.lon]);
-                });
-                if (points.length) {
-                    const bounds = L.latLngBounds(points);
-                    map.fitBounds(bounds.pad(0.15));
-                } else {
-                    map.setView([-38.5, -63], 4);
-                }
-            }
-
-            function buildPopup(item) {
-                return `
-        <div>
-          <strong>${item.geo_nombre || item.maquina}</strong><br>
-          Máquina: ${item.maquina}<br>
-          Grupo: ${item.grupo_economico}<br>
-          Región: ${item.region} · Provincia: ${item.provincia}<br>
-          Tipo: ${item.tipo_maquina} (${item.tecnologia})<br>
-          Generación neta acumulada: ${numberFormatter.format(Math.round(item.generacion_total))} MWh<br>
-          Potencia instalada: ${item.potencia_instalada ? item.potencia_instalada + " MW" : "Sin dato"}${item.isApproxLocation ? "<br><em>Ubicación aproximada (centroide provincial)</em>" : ""}
-        </div>`;
-            }
-
-            function renderBars(data, dimension) {
-                const container = document.getElementById("barChart");
-                container.innerHTML = "";
-                const dimensionLabel =
-                    aggregationOptions.find((opt) => opt.value === dimension)
-                        ?.label || "";
-                chartCaption.textContent = dimensionLabel
-                    ? `Por ${dimensionLabel.toLowerCase()}`
-                    : "";
-                if (!data.length) {
-                    container.innerHTML =
-                        '<div class="chart-empty">No hay datos para los filtros seleccionados.</div>';
-                    return;
-                }
-                const grouped = d3
-                    .rollups(
-                        data,
-                        (v) => d3.sum(v, (d) => getMetricValue(d)),
-                        (d) => getDimensionValue(d, dimension),
-                    )
-                    .sort((a, b) => b[1] - a[1]);
-                const maxBars = dimension === "provincia" ? 15 : 12;
-                const visible = grouped.slice(0, maxBars);
-                const remainder = grouped.slice(maxBars);
-                if (remainder.length) {
-                    visible.push(["Otros", d3.sum(remainder, (d) => d[1])]);
-                }
-
-                const width = container.clientWidth || 520;
-                const margin = { top: 10, right: 16, bottom: 30, left: 150 };
-                const innerWidth = Math.max(
-                    220,
-                    width - margin.left - margin.right,
-                );
-                const barHeight = 26;
-                const barGap = 12;
-                const innerHeight = visible.length * (barHeight + barGap);
-                const height = innerHeight + margin.top + margin.bottom;
-
-                const svg = d3
-                    .create("svg")
-                    .attr("width", "100%")
-                    .attr("height", height)
-                    .attr("viewBox", `0 0 ${width} ${height}`);
-
-                const g = svg
-                    .append("g")
-                    .attr(
-                        "transform",
-                        `translate(${margin.left},${margin.top})`,
-                    );
-
-                const x = d3
-                    .scaleLinear()
-                    .domain([0, d3.max(visible, (d) => d[1]) || 1])
-                    .range([0, innerWidth]);
-
-                const y = d3
-                    .scaleBand()
-                    .domain(visible.map((d) => d[0]))
-                    .range([0, innerHeight])
-                    .padding(0.2);
-
-                g.append("g")
-                    .call(d3.axisLeft(y).tickSize(0))
-                    .selectAll("text")
-                    .style("font-size", "0.85rem")
-                    .style("fill", "#374151");
-                g.select(".domain").remove();
-
-                g.append("g")
-                    .attr("transform", `translate(0, ${innerHeight})`)
-                    .call(
-                        d3
-                            .axisBottom(x)
-                            .ticks(4)
-                            .tickFormat((d) => formatMetricValue(d)),
-                    )
-                    .selectAll("text")
-                    .style("font-size", "0.8rem")
-                    .style("fill", "#6b7280");
-
-                const bars = g
-                    .selectAll(".bar")
-                    .data(visible)
-                    .join("g")
-                    .attr("class", "bar")
-                    .attr("transform", (d) => `translate(0, ${y(d[0])})`)
-                    .style("cursor", (d) =>
-                        d[0] === "Otros" ? "default" : "pointer",
-                    );
-
-                bars.append("rect")
-                    .attr("height", y.bandwidth())
-                    .attr("width", (d) => Math.max(4, x(d[1])))
-                    .attr("rx", 6)
-                    .attr("fill", (d) =>
-                        d[0] === "Otros"
-                            ? "#dbeafe"
-                            : getColorForCategory(d[0]),
-                    );
-
-                bars.append("text")
-                    .attr("x", (d) => Math.min(innerWidth - 4, x(d[1]) + 8))
-                    .attr("y", y.bandwidth() / 2)
-                    .attr("dy", "0.35em")
-                    .style("font-size", "0.82rem")
-                    .style("fill", "#111827")
-                    .text(
-                        (d) =>
-                            `${formatMetricValue(d[1])} ${currentMetric.unit}`,
-                    );
-
-                function refreshBarSelection() {
-                    bars.classed(
-                        "bar-selected",
-                        (d) =>
-                            !!(
-                                persistentHighlightConfig &&
-                                persistentHighlightConfig.value === d[0] &&
-                                persistentHighlightConfig.dimension ===
-                                    dimension
-                            ),
-                    );
-                }
-
-                bars.on("mouseenter", (event, d) => {
-                    if (d[0] === "Otros") return;
-                    setHoverHighlight(d[0], dimension, data);
-                })
-                    .on("mouseleave", () => {
-                        clearHoverHighlight();
-                    })
-                    .on("click", (event, d) => {
-                        if (d[0] === "Otros") return;
+                    toggle.addEventListener("click", (event) => {
                         event.preventDefault();
-                        event.stopPropagation();
-                        togglePersistentHighlight(d[0], dimension, data);
-                        refreshBarSelection();
+                        toggleMultiSelect(state);
                     });
 
-                refreshBarSelection();
-
-                container.appendChild(svg.node());
-            }
-
-            function getDimensionValue(item, dimension) {
-                const raw = item[dimension];
-                if (raw === undefined || raw === null) return "Sin dato";
-                if (typeof raw === "string") {
-                    const trimmed = raw.trim();
-                    return trimmed ? trimmed : "Sin dato";
-                }
-                const converted = String(raw);
-                return converted.trim() ? converted.trim() : "Sin dato";
-            }
-
-            function collectMatches(value, dimension, data) {
-                if (!value || value === "Otros") return null;
-                const matches = new Set();
-                const target = String(value ?? "").trim();
-                data.forEach((item) => {
-                    if (getDimensionValue(item, dimension) === target) {
-                        matches.add(item.maquina);
+                    if (selectAllBtn) {
+                        selectAllBtn.addEventListener("click", (event) => {
+                            event.preventDefault();
+                            setMultiSelectSelections(state.field, state.values);
+                            updateVisuals();
+                        });
                     }
-                });
-                return matches.size ? matches : null;
-            }
 
-            function setHoverHighlight(value, dimension, data) {
-                hoverHighlightSet = collectMatches(value, dimension, data);
-                applyHighlightStyles();
-            }
+                    if (clearBtn) {
+                        clearBtn.addEventListener("click", (event) => {
+                            event.preventDefault();
+                            setMultiSelectSelections(state.field, []);
+                            updateVisuals();
+                        });
+                    }
 
-            function clearHoverHighlight() {
-                hoverHighlightSet = null;
-                applyHighlightStyles();
-            }
+                    updateMultiSelectLabel(state.field);
+                }
 
-            function togglePersistentHighlight(value, dimension, data) {
-                if (
-                    persistentHighlightConfig &&
-                    persistentHighlightConfig.value === value &&
-                    persistentHighlightConfig.dimension === dimension
-                ) {
-                    persistentHighlightConfig = null;
-                } else {
-                    const matches = collectMatches(value, dimension, data);
-                    if (matches) {
-                        persistentHighlightConfig = {
-                            value,
-                            dimension,
-                            matches,
-                        };
+                function handleCheckboxChange(state) {
+                    filters[state.field] = state.inputs
+                        .filter((input) => input.checked)
+                        .map((input) => input.value);
+                    updateMultiSelectLabel(state.field);
+                    updateVisuals();
+                }
+
+                function setMultiSelectSelections(field, selectedValues) {
+                    const state = multiSelectState[field];
+                    if (!state) return;
+                    const allowed = new Set(selectedValues);
+                    state.inputs.forEach((input) => {
+                        input.checked = allowed.has(input.value);
+                    });
+                    filters[field] = state.inputs
+                        .filter((input) => input.checked)
+                        .map((input) => input.value);
+                    updateMultiSelectLabel(field);
+                }
+
+                function updateMultiSelectLabel(field) {
+                    const state = multiSelectState[field];
+                    if (!state || !state.labelEl) return;
+                    const selected = filters[field] || [];
+                    if (selected.length === 0) {
+                        state.labelEl.textContent =
+                            field === "ano" ? "Todos" : "Todas";
+                    } else if (selected.length === 1) {
+                        state.labelEl.textContent = selected[0];
+                    } else if (selected.length <= 3) {
+                        state.labelEl.textContent = selected.join(", ");
                     } else {
+                        state.labelEl.textContent = `${selected.length} seleccionados`;
+                    }
+                }
+
+                function toggleMultiSelect(state) {
+                    const shouldOpen = !state.container.classList.contains("open");
+                    closeAllMultiSelects();
+                    if (shouldOpen) {
+                        state.container.classList.add("open");
+                        state.toggle.setAttribute("aria-expanded", "true");
+                    }
+                }
+
+                function closeAllMultiSelects() {
+                    Object.values(multiSelectState).forEach((state) => {
+                        state.container.classList.remove("open");
+                        state.toggle.setAttribute("aria-expanded", "false");
+                    });
+                }
+
+                function applyStateFromURL() {
+                    if (typeof window === "undefined") {
+                        updateVisuals();
+                        return;
+                    }
+                    const params = new URLSearchParams(window.location.search);
+                    isRestoringStateFromUrl = true;
+                    filterConfig.forEach((cfg) => {
+                        const paramKey = filterParamKeys[cfg.field];
+                        const raw = params.get(paramKey);
+                        const values = raw
+                            ? raw
+                                  .split("|")
+                                  .map((value) => value.trim())
+                                  .filter(Boolean)
+                            : [];
+                        setMultiSelectSelections(cfg.field, values);
+                    });
+                    const aggParam = params.get("agg");
+                    if (
+                        aggParam &&
+                        aggregationOptions.some((opt) => opt.value === aggParam)
+                    ) {
+                        aggregationSelect.value = aggParam;
+                    } else {
+                        aggregationSelect.value = "grupo_economico";
+                    }
+                    const metricParam = params.get(metricParamKey);
+                    if (metricParam) {
+                        setCurrentMetric(metricParam);
+                    } else {
+                        setCurrentMetric(metricOptions[0].value);
+                    }
+                    updateVisuals();
+                    isRestoringStateFromUrl = false;
+                    syncStateToURL();
+                }
+
+                function syncStateToURL() {
+                    if (typeof window === "undefined") return;
+                    if (isRestoringStateFromUrl) return;
+                    const params = new URLSearchParams();
+                    params.set("agg", aggregationSelect.value);
+                    params.set(metricParamKey, currentMetric.value);
+                    filterConfig.forEach((cfg) => {
+                        const values = filters[cfg.field];
+                        if (values && values.length) {
+                            params.set(
+                                filterParamKeys[cfg.field],
+                                values.join("|"),
+                            );
+                        }
+                    });
+                    const queryString = params.toString();
+                    // Keep query strings concise (< ~2000 chars) by using terse keys and a compact delimiter.
+                    const newUrl = `${
+                        window.location.pathname
+                    }${queryString ? `?${queryString}` : ""}`;
+                    const currentUrl = `${window.location.pathname}${window.location.search}`;
+                    if (newUrl !== currentUrl) {
+                        window.history.replaceState(null, "", newUrl);
+                    }
+                }
+
+                function getFilteredData() {
+                    const activeYears = filters.ano || [];
+                    return machines
+                        .map((machine) => {
+                            const generation = sumGenerationForYears(
+                                machine,
+                                activeYears,
+                            );
+                            const potencia = pickPowerForYears(
+                                machine,
+                                activeYears,
+                            );
+                            return {
+                                ...machine,
+                                generacion_total: generation,
+                                potencia_filtrada: potencia,
+                            };
+                        })
+                        .filter((item) => {
+                            if (activeYears.length && item.generacion_total <= 0)
+                                return false;
+                            return Object.entries(filters).every(
+                                ([field, values]) => {
+                                    if (field === "ano") return true;
+                                    if (!values || values.length === 0) return true;
+                                    return values.includes(item[field]);
+                                },
+                            );
+                        });
+                }
+
+                function updateVisuals() {
+                    const filtered = getFilteredData();
+                    const dimension = aggregationSelect.value;
+                    if (
+                        persistentHighlightConfig &&
+                        persistentHighlightConfig.dimension !== dimension
+                    ) {
                         persistentHighlightConfig = null;
                     }
-                }
-                applyHighlightStyles();
-            }
-
-            function applyHighlightStyles() {
-                const persistentSet =
-                    persistentHighlightConfig?.matches || null;
-                markerRefs.forEach((entry) => {
-                    const { marker, item, color, radius } = entry;
-                    const isPersistent =
-                        persistentSet && persistentSet.has(item.maquina);
-                    const isHover =
-                        hoverHighlightSet &&
-                        hoverHighlightSet.has(item.maquina);
-                    const style = {
-                        radius,
-                        fillColor: color,
-                        color: isPersistent
-                            ? "#111827"
-                            : getStrokeColor(color),
-                        weight: isPersistent ? 3 : isHover ? 2 : 1,
-                        opacity: isPersistent ? 1 : 0.85,
-                        fillOpacity: isPersistent || isHover ? 0.85 : 0.6,
-                    };
-                    marker.setStyle(style);
-                    if (isPersistent || isHover) {
-                        if (marker.bringToFront) marker.bringToFront();
+                    if (persistentHighlightConfig) {
+                        const updatedMatches = collectMatches(
+                            persistentHighlightConfig.value,
+                            dimension,
+                            filtered,
+                        );
+                        if (updatedMatches && updatedMatches.size) {
+                            persistentHighlightConfig.matches = updatedMatches;
+                        } else {
+                            persistentHighlightConfig = null;
+                        }
                     }
-                });
-            }
+                    hoverHighlightSet = null;
+                    chartTitle.textContent = currentMetric.chartTitle;
+                    updateSummary(filtered);
+                    renderMap(filtered, dimension);
+                    renderBars(filtered, dimension);
+                    applyHighlightStyles();
+                    syncStateToURL();
+                }
+
+                function updateSummary(data) {
+                    const totalMetric = d3.sum(data, (d) => getMetricValue(d));
+                    const located = data.filter(
+                        (d) => Number.isFinite(d.lat) && Number.isFinite(d.lon),
+                    );
+                    const withGeo = located.length;
+                    const exactCount = located.filter(
+                        (d) => d.hasExactLocation,
+                    ).length;
+                    const approxCount = located.filter(
+                        (d) => d.isApproxLocation,
+                    ).length;
+                    const totalMachines = data.length;
+                    const approxInfo = approxCount
+                        ? ` + ${numberFormatter.format(approxCount)} aprox.`
+                        : "";
+                    summarySpan.textContent = `${numberFormatter.format(totalMachines)} máquinas filtradas | ${numberFormatter.format(exactCount)} con coordenada oficial${approxInfo} | ${formatMetricValue(totalMetric)} ${currentMetric.unit} ${currentMetric.summarySuffix}`;
+                    mapCounterSpan.textContent = withGeo
+                        ? `${withGeo} ubicadas (${numberFormatter.format(
+                              exactCount,
+                          )} exactas${approxCount ? `, ${approxCount} aprox.` : ""})`
+                        : "Sin geolocalización disponible";
+                    mapNote.textContent = approxCount
+                        ? "Las máquinas sin coordenadas oficiales se ubican cerca del centroide provincial (posición aproximada)."
+                        : "";
+                }
+
+                function createMap() {
+                    map = L.map("map", {
+                        preferCanvas: true,
+                        zoomControl: true,
+                    }).setView([-38.5, -63], 4);
+                    L.tileLayer(
+                        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                        {
+                            maxZoom: 12,
+                            attribution: "&copy; OpenStreetMap contributors",
+                        },
+                    ).addTo(map);
+                    markersLayer = L.layerGroup().addTo(map);
+                }
+
+                function renderMap(data, dimension) {
+                    markersLayer.clearLayers();
+                    markerRefs.clear();
+                    const points = [];
+                    const metricValues = data.map((item) => getMetricValue(item));
+                    const maxMetric = d3.max(metricValues) || 1;
+                    const valueScale = d3
+                        .scaleSqrt()
+                        .domain([0, maxMetric])
+                        .range([5, 26]);
+                    data.forEach((item) => {
+                        if (
+                            !Number.isFinite(item.lat) ||
+                            !Number.isFinite(item.lon)
+                        )
+                            return;
+                        const categoryValue = getDimensionValue(item, dimension);
+                        const fillColor = getColorForCategory(categoryValue);
+                        const metricValue = getMetricValue(item);
+                        const radius =
+                            metricValue > 0 ? valueScale(metricValue) : 5;
+                        const markerStyle = {
+                            ...markerBaseStyle,
+                            radius,
+                            fillColor,
+                            color: getStrokeColor(fillColor),
+                        };
+                        const marker = L.circleMarker(
+                            [item.lat, item.lon],
+                            markerStyle,
+                        );
+                        marker.bindPopup(buildPopup(item));
+                        marker.addTo(markersLayer);
+                        markerRefs.set(item.maquina, {
+                            marker,
+                            item,
+                            color: fillColor,
+                            radius,
+                        });
+                        points.push([item.lat, item.lon]);
+                    });
+                    if (points.length) {
+                        const bounds = L.latLngBounds(points);
+                        map.fitBounds(bounds.pad(0.15));
+                    } else {
+                        map.setView([-38.5, -63], 4);
+                    }
+                }
+
+                function buildPopup(item) {
+                    return `
+            <div>
+              <strong>${item.geo_nombre || item.maquina}</strong><br>
+              Máquina: ${item.maquina}<br>
+              Grupo: ${item.grupo_economico}<br>
+              Región: ${item.region} · Provincia: ${item.provincia}<br>
+              Tipo: ${item.tipo_maquina} (${item.tecnologia})<br>
+              Generación neta acumulada: ${numberFormatter.format(Math.round(item.generacion_total))} MWh<br>
+              Potencia instalada: ${item.potencia_filtrada ? item.potencia_filtrada + " MW" : item.potencia_instalada ? item.potencia_instalada + " MW" : "Sin dato"}${item.isApproxLocation ? "<br><em>Ubicación aproximada (centroide provincial)</em>" : ""}
+            </div>`;
+                }
+
+                function renderBars(data, dimension) {
+                    const container = document.getElementById("barChart");
+                    container.innerHTML = "";
+                    const dimensionLabel =
+                        aggregationOptions.find((opt) => opt.value === dimension)
+                            ?.label || "";
+                    chartCaption.textContent = dimensionLabel
+                        ? `Por ${dimensionLabel.toLowerCase()}`
+                        : "";
+                    if (!data.length) {
+                        container.innerHTML =
+                            '<div class="chart-empty">No hay datos para los filtros seleccionados.</div>';
+                        return;
+                    }
+                    const grouped = d3
+                        .rollups(
+                            data,
+                            (v) => d3.sum(v, (d) => getMetricValue(d)),
+                            (d) => getDimensionValue(d, dimension),
+                        )
+                        .sort((a, b) => b[1] - a[1]);
+                    const maxBars = dimension === "provincia" ? 15 : 12;
+                    const visible = grouped.slice(0, maxBars);
+                    const remainder = grouped.slice(maxBars);
+                    if (remainder.length) {
+                        visible.push(["Otros", d3.sum(remainder, (d) => d[1])]);
+                    }
+
+                    const width = container.clientWidth || 520;
+                    const margin = { top: 10, right: 16, bottom: 30, left: 150 };
+                    const innerWidth = Math.max(
+                        220,
+                        width - margin.left - margin.right,
+                    );
+                    const barHeight = 26;
+                    const barGap = 12;
+                    const innerHeight = visible.length * (barHeight + barGap);
+                    const height = innerHeight + margin.top + margin.bottom;
+
+                    const svg = d3
+                        .create("svg")
+                        .attr("width", "100%")
+                        .attr("height", height)
+                        .attr("viewBox", `0 0 ${width} ${height}`);
+
+                    const g = svg
+                        .append("g")
+                        .attr(
+                            "transform",
+                            `translate(${margin.left},${margin.top})`,
+                        );
+
+                    const x = d3
+                        .scaleLinear()
+                        .domain([0, d3.max(visible, (d) => d[1]) || 1])
+                        .range([0, innerWidth]);
+
+                    const y = d3
+                        .scaleBand()
+                        .domain(visible.map((d) => d[0]))
+                        .range([0, innerHeight])
+                        .padding(0.2);
+
+                    g.append("g")
+                        .call(d3.axisLeft(y).tickSize(0))
+                        .selectAll("text")
+                        .style("font-size", "0.85rem")
+                        .style("fill", "#374151");
+                    g.select(".domain").remove();
+
+                    g.append("g")
+                        .attr("transform", `translate(0, ${innerHeight})`)
+                        .call(
+                            d3
+                                .axisBottom(x)
+                                .ticks(4)
+                                .tickFormat((d) => formatMetricValue(d)),
+                        )
+                        .selectAll("text")
+                        .style("font-size", "0.8rem")
+                        .style("fill", "#6b7280");
+
+                    const bars = g
+                        .selectAll(".bar")
+                        .data(visible)
+                        .join("g")
+                        .attr("class", "bar")
+                        .attr("transform", (d) => `translate(0, ${y(d[0])})`)
+                        .style("cursor", (d) =>
+                            d[0] === "Otros" ? "default" : "pointer",
+                        );
+
+                    bars.append("rect")
+                        .attr("height", y.bandwidth())
+                        .attr("width", (d) => Math.max(4, x(d[1])))
+                        .attr("rx", 6)
+                        .attr("fill", (d) =>
+                            d[0] === "Otros"
+                                ? "#dbeafe"
+                                : getColorForCategory(d[0]),
+                        );
+
+                    bars.append("text")
+                        .attr("x", (d) => Math.min(innerWidth - 4, x(d[1]) + 8))
+                        .attr("y", y.bandwidth() / 2)
+                        .attr("dy", "0.35em")
+                        .style("font-size", "0.82rem")
+                        .style("fill", "#111827")
+                        .text(
+                            (d) =>
+                                `${formatMetricValue(d[1])} ${currentMetric.unit}`,
+                        );
+
+                    function refreshBarSelection() {
+                        bars.classed(
+                            "bar-selected",
+                            (d) =>
+                                !!(
+                                    persistentHighlightConfig &&
+                                    persistentHighlightConfig.value === d[0] &&
+                                    persistentHighlightConfig.dimension ===
+                                        dimension
+                                ),
+                        );
+                    }
+
+                    bars.on("mouseenter", (event, d) => {
+                        if (d[0] === "Otros") return;
+                        setHoverHighlight(d[0], dimension, data);
+                    })
+                        .on("mouseleave", () => {
+                            clearHoverHighlight();
+                        })
+                        .on("click", (event, d) => {
+                            if (d[0] === "Otros") return;
+                            event.preventDefault();
+                            event.stopPropagation();
+                            togglePersistentHighlight(d[0], dimension, data);
+                            refreshBarSelection();
+                        });
+
+                    refreshBarSelection();
+
+                    container.appendChild(svg.node());
+                }
+
+                function getDimensionValue(item, dimension) {
+                    const raw = item[dimension];
+                    if (raw === undefined || raw === null) return "Sin dato";
+                    if (typeof raw === "string") {
+                        const trimmed = raw.trim();
+                        return trimmed ? trimmed : "Sin dato";
+                    }
+                    const converted = String(raw);
+                    return converted.trim() ? converted.trim() : "Sin dato";
+                }
+
+                function collectMatches(value, dimension, data) {
+                    if (!value || value === "Otros") return null;
+                    const matches = new Set();
+                    const target = String(value ?? "").trim();
+                    data.forEach((item) => {
+                        if (getDimensionValue(item, dimension) === target) {
+                            matches.add(item.maquina);
+                        }
+                    });
+                    return matches.size ? matches : null;
+                }
+
+                function setHoverHighlight(value, dimension, data) {
+                    hoverHighlightSet = collectMatches(value, dimension, data);
+                    applyHighlightStyles();
+                }
+
+                function clearHoverHighlight() {
+                    hoverHighlightSet = null;
+                    applyHighlightStyles();
+                }
+
+                function togglePersistentHighlight(value, dimension, data) {
+                    if (
+                        persistentHighlightConfig &&
+                        persistentHighlightConfig.value === value &&
+                        persistentHighlightConfig.dimension === dimension
+                    ) {
+                        persistentHighlightConfig = null;
+                    } else {
+                        const matches = collectMatches(value, dimension, data);
+                        if (matches) {
+                            persistentHighlightConfig = {
+                                value,
+                                dimension,
+                                matches,
+                            };
+                        } else {
+                            persistentHighlightConfig = null;
+                        }
+                    }
+                    applyHighlightStyles();
+                }
+
+                function applyHighlightStyles() {
+                    const persistentSet =
+                        persistentHighlightConfig?.matches || null;
+                    markerRefs.forEach((entry) => {
+                        const { marker, item, color, radius } = entry;
+                        const isPersistent =
+                            persistentSet && persistentSet.has(item.maquina);
+                        const isHover =
+                            hoverHighlightSet &&
+                            hoverHighlightSet.has(item.maquina);
+                        const style = {
+                            radius,
+                            fillColor: color,
+                            color: isPersistent
+                                ? "#111827"
+                                : getStrokeColor(color),
+                            weight: isPersistent ? 3 : isHover ? 2 : 1,
+                            opacity: isPersistent ? 1 : 0.85,
+                            fillOpacity: isPersistent || isHover ? 0.85 : 0.6,
+                        };
+                        marker.setStyle(style);
+                        if (isPersistent || isHover) {
+                            if (marker.bringToFront) marker.bringToFront();
+                        }
+                    });
+                }
         </script>
     </body>
 </html>
