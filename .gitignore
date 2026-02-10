@@ -1,0 +1,6 @@
+# Datos CAMMESA (no versionar)
+BASE_INFORME_MENSUAL_*/
+BASE_INFORME_MENSUAL_*.zip
+
+# Entornos locales
+.venv/
