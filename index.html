@@ -165,6 +165,14 @@
             .multiselect-option input {
                 accent-color: #4f46e5;
             }
+            .multiselect-group-option {
+                font-weight: 600;
+                margin-top: 0.45rem;
+            }
+            .multiselect-option-child {
+                padding-left: 1.2rem;
+                font-size: 0.8rem;
+            }
             .dashboard-layout {
                 display: flex;
                 flex-direction: column;
@@ -312,84 +320,13 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-12 col-md-2">
-                        <label for="filterRegion" class="filter-label"
-                            >Región</label
-                        >
-                        <div class="multiselect" data-filter-field="region">
-                            <button
-                                id="filterRegion"
-                                type="button"
-                                class="multiselect-toggle"
-                                aria-haspopup="listbox"
-                                aria-expanded="false"
-                            >
-                                <span class="multiselect-label">Todas</span>
-                                <span class="multiselect-caret">&#9662;</span>
-                            </button>
-                            <div class="multiselect-menu" role="listbox">
-                                <div class="multiselect-actions">
-                                    <button
-                                        type="button"
-                                        class="multiselect-select-all"
-                                    >
-                                        Seleccionar todos
-                                    </button>
-                                    <button
-                                        type="button"
-                                        class="multiselect-clear"
-                                    >
-                                        Limpiar
-                                    </button>
-                                </div>
-                                <div class="multiselect-options"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-2">
+                    <div class="col-12 col-md-3">
                         <label for="filterProvincia" class="filter-label"
                             >Provincia</label
                         >
                         <div class="multiselect" data-filter-field="provincia">
                             <button
                                 id="filterProvincia"
-                                type="button"
-                                class="multiselect-toggle"
-                                aria-haspopup="listbox"
-                                aria-expanded="false"
-                            >
-                                <span class="multiselect-label">Todas</span>
-                                <span class="multiselect-caret">&#9662;</span>
-                            </button>
-                            <div class="multiselect-menu" role="listbox">
-                                <div class="multiselect-actions">
-                                    <button
-                                        type="button"
-                                        class="multiselect-select-all"
-                                    >
-                                        Seleccionar todos
-                                    </button>
-                                    <button
-                                        type="button"
-                                        class="multiselect-clear"
-                                    >
-                                        Limpiar
-                                    </button>
-                                </div>
-                                <div class="multiselect-options"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-2">
-                        <label for="filterTipo" class="filter-label"
-                            >Tipo máquina</label
-                        >
-                        <div
-                            class="multiselect"
-                            data-filter-field="tipo_maquina"
-                        >
-                            <button
-                                id="filterTipo"
                                 type="button"
                                 class="multiselect-toggle"
                                 aria-haspopup="listbox"
@@ -557,9 +494,7 @@
             const filters = {
                 ano: [],
                 grupo_economico: [],
-                region: [],
                 provincia: [],
-                tipo_maquina: [],
                 tecnologia: [],
                 fuente_generacion: [],
             };
@@ -567,14 +502,14 @@
             const filterParamKeys = {
                 ano: "an",
                 grupo_economico: "ge",
-                region: "rg",
                 provincia: "pr",
-                tipo_maquina: "tm",
                 tecnologia: "te",
                 fuente_generacion: "fg",
             };
             const metricParamKey = "mt";
             let isRestoringStateFromUrl = false;
+            const BA_GBA_TOKEN = "__BA_GBA__";
+            const BA_INTERIOR_TOKEN = "__BA_INTERIOR__";
 
             const filterConfig = [
                 { id: "filterAno", field: "ano", label: "Año" },
@@ -583,16 +518,10 @@
                     field: "grupo_economico",
                     label: "Grupo económico",
                 },
-                { id: "filterRegion", field: "region", label: "Región" },
                 {
                     id: "filterProvincia",
                     field: "provincia",
                     label: "Provincia",
-                },
-                {
-                    id: "filterTipo",
-                    field: "tipo_maquina",
-                    label: "Tipo de máquina",
                 },
                 {
                     id: "filterTecnologia",
@@ -997,11 +926,38 @@
                 return map[key] || machine.potencia_instalada || 0;
             }
 
+            function normalizeKey(value) {
+                return (value || "")
+                    .toString()
+                    .normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, "")
+                    .toUpperCase()
+                    .replace(/\./g, "")
+                    .replace(/\s+/g, " ")
+                    .trim();
+            }
+
+            function getProvinceFilterToken(item) {
+                const provincia = normalizeKey(item.provincia);
+                const region = normalizeKey(item.region);
+                if (provincia === "BUENOS AIRES") {
+                    if (region === "GRAN BS AS" || region === "GRAN BSAS") {
+                        return BA_GBA_TOKEN;
+                    }
+                    return BA_INTERIOR_TOKEN;
+                }
+                return item.provincia;
+            }
+
             function populateFilters(data) {
                 filterConfig.forEach((cfg) => {
                     let values = [];
                     if (cfg.field === "ano") {
                         values = availableYears.slice();
+                    } else if (cfg.field === "provincia") {
+                        const provinceGroups = buildProvinceGroups(data);
+                        buildProvinceGroupedMultiSelect(cfg, provinceGroups);
+                        return;
                     } else {
                         values = Array.from(
                             new Set(
@@ -1041,6 +997,66 @@
                         closeAllMultiSelects();
                     }
                 });
+            }
+
+            function buildProvinceGroups(data) {
+                const canonicalRegionLabel = (rawRegion) => {
+                    const region = (rawRegion || "").toString().trim();
+                    if (!region) return "";
+                    const normalized = normalizeKey(region);
+                    if (
+                        normalized === "GRAN BS AS" ||
+                        normalized === "GRAN BSAS" ||
+                        normalized === "BUENOS AIRES" ||
+                        normalized.includes("BUENOS AIRES")
+                    ) {
+                        return "Buenos Aires";
+                    }
+                    return region;
+                };
+                const provinceFilterOptionForItem = (item) => {
+                    const region = (item.region || "").toString().trim();
+                    const provincia = (item.provincia || "").toString().trim();
+                    const normProvince = normalizeKey(provincia);
+                    const normRegion = normalizeKey(region);
+                    if (normProvince === "BUENOS AIRES") {
+                        if (
+                            normRegion === "GRAN BS AS" ||
+                            normRegion === "GRAN BSAS"
+                        ) {
+                            return {
+                                value: BA_GBA_TOKEN,
+                                label: "Gran Bs. As",
+                            };
+                        }
+                        return {
+                            value: BA_INTERIOR_TOKEN,
+                            label: "Interior de la Provincia de Bs. As.",
+                        };
+                    }
+                    return { value: provincia, label: provincia };
+                };
+                const byRegion = new Map();
+                data.forEach((item) => {
+                    const region = canonicalRegionLabel(item.region);
+                    const provincia = (item.provincia || "").toString().trim();
+                    if (!region || !provincia) return;
+                    if (!byRegion.has(region)) {
+                        byRegion.set(region, new Map());
+                    }
+                    const option = provinceFilterOptionForItem(item);
+                    byRegion.get(region).set(option.value, option.label);
+                });
+                return Array.from(byRegion.entries())
+                    .map(([region, provinces]) => ({
+                        region,
+                        provinces: Array.from(provinces.entries())
+                            .map(([value, label]) => ({ value, label }))
+                            .sort((a, b) =>
+                                a.label.localeCompare(b.label, "es"),
+                            ),
+                    }))
+                    .sort((a, b) => a.region.localeCompare(b.region, "es"));
             }
 
             function buildMultiSelect(config, values) {
@@ -1112,11 +1128,127 @@
                 updateMultiSelectLabel(state.field);
             }
 
+            function buildProvinceGroupedMultiSelect(config, groups) {
+                const toggle = document.getElementById(config.id);
+                if (!toggle) return;
+                const container = toggle.closest(".multiselect");
+                const optionsWrapper = container.querySelector(
+                    ".multiselect-options",
+                );
+                const selectAllBtn = container.querySelector(
+                    ".multiselect-select-all",
+                );
+                const clearBtn = container.querySelector(".multiselect-clear");
+                const labelEl = container.querySelector(".multiselect-label");
+
+                optionsWrapper.innerHTML = "";
+                const values = groups.flatMap((group) => group.provinces);
+                const valueLabels = new Map(
+                    values.map((option) => [option.value, option.label]),
+                );
+                const state = {
+                    field: config.field,
+                    toggle,
+                    container,
+                    labelEl,
+                    optionsWrapper,
+                    selectAllBtn,
+                    clearBtn,
+                    values: values.map((option) => option.value),
+                    inputs: [],
+                    groupedByRegion: true,
+                    regionInputs: new Map(),
+                    regionChildren: new Map(),
+                    valueLabels,
+                };
+                multiSelectState[config.field] = state;
+
+                groups.forEach((group, regionIndex) => {
+                    const regionLabel = document.createElement("label");
+                    regionLabel.className =
+                        "multiselect-option multiselect-group-option";
+                    const regionInput = document.createElement("input");
+                    regionInput.type = "checkbox";
+                    regionInput.id = `${config.id}_region_${regionIndex}`;
+                    regionInput.dataset.level = "region";
+                    const regionText = document.createElement("span");
+                    regionText.textContent = group.region;
+                    regionLabel.appendChild(regionInput);
+                    regionLabel.appendChild(regionText);
+                    optionsWrapper.appendChild(regionLabel);
+                    state.regionInputs.set(group.region, regionInput);
+
+                    const children = [];
+                    group.provinces.forEach((province, provinceIndex) => {
+                        const provinceLabel = document.createElement("label");
+                        provinceLabel.className =
+                            "multiselect-option multiselect-option-child";
+                        const provinceInput = document.createElement("input");
+                        provinceInput.type = "checkbox";
+                        provinceInput.id = `${config.id}_opt_${regionIndex}_${provinceIndex}`;
+                        provinceInput.value = province.value;
+                        const provinceText = document.createElement("span");
+                        provinceText.textContent = province.label;
+                        provinceLabel.appendChild(provinceInput);
+                        provinceLabel.appendChild(provinceText);
+                        optionsWrapper.appendChild(provinceLabel);
+                        state.inputs.push(provinceInput);
+                        children.push(provinceInput);
+                        provinceInput.addEventListener("change", () =>
+                            handleCheckboxChange(state),
+                        );
+                    });
+                    state.regionChildren.set(group.region, children);
+                    regionInput.addEventListener("change", () => {
+                        const selected = new Set(filters[state.field] || []);
+                        children.forEach((childInput) => {
+                            if (regionInput.checked) {
+                                selected.add(childInput.value);
+                            } else {
+                                selected.delete(childInput.value);
+                            }
+                        });
+                        setMultiSelectSelections(
+                            state.field,
+                            Array.from(selected),
+                        );
+                        updateVisuals();
+                    });
+                });
+
+                toggle.addEventListener("click", (event) => {
+                    event.preventDefault();
+                    toggleMultiSelect(state);
+                });
+
+                if (selectAllBtn) {
+                    selectAllBtn.addEventListener("click", (event) => {
+                        event.preventDefault();
+                        setMultiSelectSelections(state.field, state.values);
+                        updateVisuals();
+                    });
+                }
+
+                if (clearBtn) {
+                    clearBtn.addEventListener("click", (event) => {
+                        event.preventDefault();
+                        setMultiSelectSelections(state.field, []);
+                        updateVisuals();
+                    });
+                }
+
+                updateMultiSelectLabel(state.field);
+                updateProvinceGroupState(state);
+            }
+
             function handleCheckboxChange(state) {
                 filters[state.field] = state.inputs
                     .filter((input) => input.checked)
                     .map((input) => input.value);
                 updateMultiSelectLabel(state.field);
+                if (state.groupedByRegion) {
+                    updateProvinceGroupState(state);
+                }
                 updateVisuals();
             }
 
@@ -1131,19 +1263,43 @@
                     .filter((input) => input.checked)
                     .map((input) => input.value);
                 updateMultiSelectLabel(field);
+                if (state.groupedByRegion) {
+                    updateProvinceGroupState(state);
+                }
+            }
+
+            function updateProvinceGroupState(state) {
+                if (!state || !state.groupedByRegion) return;
+                state.regionChildren.forEach((children, region) => {
+                    const regionInput = state.regionInputs.get(region);
+                    if (!regionInput) return;
+                    const selectedCount = children.filter(
+                        (input) => input.checked,
+                    ).length;
+                    regionInput.checked =
+                        children.length > 0 &&
+                        selectedCount === children.length;
+                    regionInput.indeterminate =
+                        selectedCount > 0 && selectedCount < children.length;
+                });
             }
 
             function updateMultiSelectLabel(field) {
                 const state = multiSelectState[field];
                 if (!state || !state.labelEl) return;
                 const selected = filters[field] || [];
+                const selectedLabels = selected.map(
+                    (value) =>
+                        (state.valueLabels && state.valueLabels.get(value)) ||
+                        value,
+                );
                 if (selected.length === 0) {
                     state.labelEl.textContent =
                         field === "ano" ? "Todos" : "Todas";
                 } else if (selected.length === 1) {
-                    state.labelEl.textContent = selected[0];
+                    state.labelEl.textContent = selectedLabels[0];
                 } else if (selected.length <= 3) {
-                    state.labelEl.textContent = selected.join(", ");
+                    state.labelEl.textContent = selectedLabels.join(", ");
                 } else {
                     state.labelEl.textContent = `${selected.length} seleccionados`;
                 }
@@ -1254,6 +1410,11 @@
                             ([field, values]) => {
                                 if (field === "ano") return true;
                                 if (!values || values.length === 0) return true;
+                                if (field === "provincia") {
+                                    return values.includes(
+                                        getProvinceFilterToken(item),
+                                    );
+                                }
                                 return values.includes(item[field]);
                             },
                         );
