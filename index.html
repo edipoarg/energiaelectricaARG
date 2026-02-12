@@ -146,10 +146,40 @@
             .multiselect-option input {
                 accent-color: #4f46e5;
             }
+            .dashboard-layout {
+                display: flex;
+                flex-direction: column;
+            }
+            #vizRow {
+                order: 2;
+            }
+            #advancedFiltersCard {
+                order: 3;
+                margin-top: 0.85rem;
+            }
+            #advancedFiltersCard summary {
+                cursor: pointer;
+                font-size: 0.9rem;
+                font-weight: 600;
+                color: #334155;
+                list-style: none;
+            }
+            #advancedFiltersCard summary::-webkit-details-marker {
+                display: none;
+            }
+            #advancedFiltersCard summary::before {
+                content: "▸";
+                display: inline-block;
+                margin-right: 0.45rem;
+                transition: transform 0.15s ease;
+            }
+            #advancedFiltersCard[open] summary::before {
+                transform: rotate(90deg);
+            }
         </style>
     </head>
     <body>
-        <div class="container-fluid py-4">
+        <div class="container-fluid py-4 dashboard-layout">
             <div class="mb-4">
                 <h1 class="h3 mb-2">Mercado de generación de energía</h1>
                 <p class="text-muted mb-0">
@@ -160,7 +190,8 @@
                 </p>
             </div>
 
-            <div class="card p-3 mb-4">
+            <details class="card p-3 mb-4" id="advancedFiltersCard">
+                <summary>Filtros avanzados</summary>
                 <div class="row g-3 align-items-end">
                     <div class="col-12 col-md-2">
                         <label for="filterAno" class="filter-label">Año</label>
@@ -440,9 +471,9 @@
                         </button>
                     </div>
                 </div>
-            </div>
+            </details>
 
-            <div class="row g-4">
+            <div class="row g-4" id="vizRow">
                 <div class="col-12 col-lg-6">
                     <div class="card p-3 h-100">
                         <div
