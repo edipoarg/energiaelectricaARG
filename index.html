@@ -354,50 +354,13 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-12 col-md-2">
+                    <div class="col-12 col-md-3">
                         <label for="filterTecnologia" class="filter-label"
                             >Tecnología</label
                         >
                         <div class="multiselect" data-filter-field="tecnologia">
                             <button
                                 id="filterTecnologia"
-                                type="button"
-                                class="multiselect-toggle"
-                                aria-haspopup="listbox"
-                                aria-expanded="false"
-                            >
-                                <span class="multiselect-label">Todas</span>
-                                <span class="multiselect-caret">&#9662;</span>
-                            </button>
-                            <div class="multiselect-menu" role="listbox">
-                                <div class="multiselect-actions">
-                                    <button
-                                        type="button"
-                                        class="multiselect-select-all"
-                                    >
-                                        Seleccionar todos
-                                    </button>
-                                    <button
-                                        type="button"
-                                        class="multiselect-clear"
-                                    >
-                                        Limpiar
-                                    </button>
-                                </div>
-                                <div class="multiselect-options"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-2">
-                        <label for="filterFuente" class="filter-label"
-                            >Fuente generación</label
-                        >
-                        <div
-                            class="multiselect"
-                            data-filter-field="fuente_generacion"
-                        >
-                            <button
-                                id="filterFuente"
                                 type="button"
                                 class="multiselect-toggle"
                                 aria-haspopup="listbox"
@@ -496,7 +459,6 @@
                 grupo_economico: [],
                 provincia: [],
                 tecnologia: [],
-                fuente_generacion: [],
             };
             const multiSelectState = {};
             const filterParamKeys = {
@@ -504,7 +466,6 @@
                 grupo_economico: "ge",
                 provincia: "pr",
                 tecnologia: "te",
-                fuente_generacion: "fg",
             };
             const metricParamKey = "mt";
             let isRestoringStateFromUrl = false;
@@ -527,11 +488,6 @@
                     id: "filterTecnologia",
                     field: "tecnologia",
                     label: "Tecnología",
-                },
-                {
-                    id: "filterFuente",
-                    field: "fuente_generacion",
-                    label: "Fuente",
                 },
             ];
 
@@ -958,6 +914,13 @@
                         const provinceGroups = buildProvinceGroups(data);
                         buildProvinceGroupedMultiSelect(cfg, provinceGroups);
                         return;
+                    } else if (cfg.field === "tecnologia") {
+                        const technologyGroups = buildTechnologyGroups(data);
+                        buildTechnologyGroupedMultiSelect(
+                            cfg,
+                            technologyGroups,
+                        );
+                        return;
                     } else {
                         values = Array.from(
                             new Set(
@@ -997,6 +960,46 @@
                         closeAllMultiSelects();
                     }
                 });
+            }
+
+            function sortSourcesForFilter(sources) {
+                const preferredOrder = ["Renovable", "Térmica", "Nuclear"];
+                return sources.slice().sort((a, b) => {
+                    const ai = preferredOrder.indexOf(a);
+                    const bi = preferredOrder.indexOf(b);
+                    if (ai !== -1 || bi !== -1) {
+                        if (ai === -1) return 1;
+                        if (bi === -1) return -1;
+                        return ai - bi;
+                    }
+                    return a.localeCompare(b, "es");
+                });
+            }
+
+            function buildTechnologyGroups(data) {
+                const bySource = new Map();
+                data.forEach((item) => {
+                    const source = (item.fuente_generacion || "")
+                        .toString()
+                        .trim();
+                    const technology = (item.tecnologia || "")
+                        .toString()
+                        .trim();
+                    if (!source || !technology) return;
+                    if (!bySource.has(source)) {
+                        bySource.set(source, new Set());
+                    }
+                    bySource.get(source).add(technology);
+                });
+                const sortedSources = sortSourcesForFilter(
+                    Array.from(bySource.keys()),
+                );
+                return sortedSources.map((source) => ({
+                    source,
+                    technologies: Array.from(bySource.get(source)).sort(
+                        (a, b) => a.localeCompare(b, "es"),
+                    ),
+                }));
             }
 
             function buildProvinceGroups(data) {
@@ -1203,6 +1206,123 @@
                         const selected = new Set(filters[state.field] || []);
                         children.forEach((childInput) => {
                             if (regionInput.checked) {
+                                selected.add(childInput.value);
+                            } else {
+                                selected.delete(childInput.value);
+                            }
+                        });
+                        setMultiSelectSelections(
+                            state.field,
+                            Array.from(selected),
+                        );
+                        updateVisuals();
+                    });
+                });
+
+                toggle.addEventListener("click", (event) => {
+                    event.preventDefault();
+                    toggleMultiSelect(state);
+                });
+
+                if (selectAllBtn) {
+                    selectAllBtn.addEventListener("click", (event) => {
+                        event.preventDefault();
+                        setMultiSelectSelections(state.field, state.values);
+                        updateVisuals();
+                    });
+                }
+
+                if (clearBtn) {
+                    clearBtn.addEventListener("click", (event) => {
+                        event.preventDefault();
+                        setMultiSelectSelections(state.field, []);
+                        updateVisuals();
+                    });
+                }
+
+                updateMultiSelectLabel(state.field);
+                updateProvinceGroupState(state);
+            }
+
+            function buildTechnologyGroupedMultiSelect(config, groups) {
+                const toggle = document.getElementById(config.id);
+                if (!toggle) return;
+                const container = toggle.closest(".multiselect");
+                const optionsWrapper = container.querySelector(
+                    ".multiselect-options",
+                );
+                const selectAllBtn = container.querySelector(
+                    ".multiselect-select-all",
+                );
+                const clearBtn = container.querySelector(".multiselect-clear");
+                const labelEl = container.querySelector(".multiselect-label");
+
+                optionsWrapper.innerHTML = "";
+                const values = groups.flatMap((group) => group.technologies);
+                const valueLabels = new Map(
+                    values.map((value) => [value, value]),
+                );
+                const state = {
+                    field: config.field,
+                    toggle,
+                    container,
+                    labelEl,
+                    optionsWrapper,
+                    selectAllBtn,
+                    clearBtn,
+                    values,
+                    inputs: [],
+                    groupedByRegion: true,
+                    regionInputs: new Map(),
+                    regionChildren: new Map(),
+                    valueLabels,
+                };
+                multiSelectState[config.field] = state;
+
+                groups.forEach((group, sourceIndex) => {
+                    const sourceLabel = document.createElement("label");
+                    sourceLabel.className =
+                        "multiselect-option multiselect-group-option";
+                    const sourceInput = document.createElement("input");
+                    sourceInput.type = "checkbox";
+                    sourceInput.id = `${config.id}_source_${sourceIndex}`;
+                    const sourceText = document.createElement("span");
+                    sourceText.textContent = group.source;
+                    sourceLabel.appendChild(sourceInput);
+                    sourceLabel.appendChild(sourceText);
+                    optionsWrapper.appendChild(sourceLabel);
+                    state.regionInputs.set(group.source, sourceInput);
+
+                    const children = [];
+                    group.technologies.forEach(
+                        (technology, technologyIndex) => {
+                            const technologyLabel =
+                                document.createElement("label");
+                            technologyLabel.className =
+                                "multiselect-option multiselect-option-child";
+                            const technologyInput =
+                                document.createElement("input");
+                            technologyInput.type = "checkbox";
+                            technologyInput.id = `${config.id}_opt_${sourceIndex}_${technologyIndex}`;
+                            technologyInput.value = technology;
+                            const technologyText =
+                                document.createElement("span");
+                            technologyText.textContent = technology;
+                            technologyLabel.appendChild(technologyInput);
+                            technologyLabel.appendChild(technologyText);
+                            optionsWrapper.appendChild(technologyLabel);
+                            state.inputs.push(technologyInput);
+                            children.push(technologyInput);
+                            technologyInput.addEventListener("change", () =>
+                                handleCheckboxChange(state),
+                            );
+                        },
+                    );
+                    state.regionChildren.set(group.source, children);
+                    sourceInput.addEventListener("change", () => {
+                        const selected = new Set(filters[state.field] || []);
+                        children.forEach((childInput) => {
+                            if (sourceInput.checked) {
                                 selected.add(childInput.value);
                             } else {
                                 selected.delete(childInput.value);
