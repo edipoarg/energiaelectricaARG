@@ -55,6 +55,25 @@
             .leaflet-container {
                 font-family: inherit;
             }
+            #map.map-dark {
+                background: #020617;
+            }
+            #map.map-dark .leaflet-tile-pane {
+                filter: invert(1) hue-rotate(180deg) brightness(0.78)
+                    contrast(0.92) saturate(0.7);
+            }
+            #map.map-dark .leaflet-control-zoom a {
+                background: #0f172a;
+                color: #e2e8f0;
+                border-color: #334155;
+            }
+            #map.map-dark .leaflet-control-attribution {
+                background: rgba(2, 6, 23, 0.72);
+                color: #cbd5e1;
+            }
+            #map.map-dark .leaflet-control-attribution a {
+                color: #93c5fd;
+            }
             .filter-label {
                 font-size: 0.85rem;
                 font-weight: 600;
@@ -505,6 +524,7 @@
                         </div>
                         <div
                             id="map"
+                            class="map-dark"
                             aria-label="Mapa de geolocalización"
                         ></div>
                         <p class="text-muted small mt-2 mb-0" id="mapNote"></p>
@@ -1303,10 +1323,11 @@
                     zoomControl: true,
                 }).setView([-38.5, -63], 4);
                 L.tileLayer(
-                    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                    "https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png?lang=es",
                     {
                         maxZoom: 12,
-                        attribution: "&copy; OpenStreetMap contributors",
+                        attribution:
+                            '&copy; <a href="https://wikimediafoundation.org/wiki/Maps_Terms_of_Use">Wikimedia Maps</a> &copy; OpenStreetMap contributors',
                     },
                 ).addTo(map);
                 markersLayer = L.layerGroup().addTo(map);
