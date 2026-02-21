@@ -677,47 +677,47 @@
             const colorCache = new Map();
             const strokeColorCache = new Map();
             const basePalette = [
-                "#e63946",
-                "#ff9f1c",
-                "#95c623",
-                "#33658a",
-                "#6a4c93",
-                "#00a8e8",
-                "#f28482",
-                "#edae49",
-                "#06d6a0",
-                "#40916c",
-                "#f4a261",
-                "#8d99ae",
-                "#ff70a6",
-                "#ff9770",
-                "#70d6ff",
-                "#1b998b",
-                "#c77dff",
-                "#4cc9f0",
-                "#ffba08",
-                "#3a86ff",
-                "#577590",
-                "#f25f5c",
-                "#1982c4",
-                "#8338ec",
-                "#4ecdc4",
-                "#ffbd00",
-            ];
+ 		 "#A8DADC", 
+ 		 "#BDE0FE", 
+ 		 "#CDB4DB", 
+ 		 "#FFC8DD",
+  		 "#FFD6A5", 
+  		 "#CAFFBF", 
+  		 "#E2F0CB", 
+  		 "#F1C0E8",
+  		 "#D0F4DE", 
+  		 "#FFDDD2", 
+  		 "#CDEAC0", 
+  		 "#E4C1F9",
+  		 "#B8E0D2", 
+  		 "#FDE2E4", 
+  		 "#D8F3DC", 
+  		 "#E0BBE4",
+  		 "#C9F9FF", 
+  		 "#FFF1C1", 
+  		 "#B5EAD7", 
+  		 "#FFDAC1",
+ 		 "#E6F2FF", 
+ 		 "#F3C4FB", 
+ 		 "#C8E7ED", 
+ 		 "#FFE5EC",
+  		 "#DDF3F5", 
+  		 "#EAE4F2"
+	    ];
             let colorSequenceIndex = 0;
 
             function nextPaletteColor() {
-                if (colorSequenceIndex < basePalette.length) {
-                    const precomputed = basePalette[colorSequenceIndex];
-                    colorSequenceIndex += 1;
-                    return precomputed;
-                }
-                const hue = (colorSequenceIndex * 137.508) % 360;
-                const saturation = 65;
-                const lightness = 48 + ((colorSequenceIndex % 4) - 1) * 8;
-                colorSequenceIndex += 1;
-                return `hsl(${hue}, ${saturation}%, ${Math.max(30, Math.min(65, lightness))}%)`;
-            }
+    		const goldenAngle = 137.508;
+    		const hue = (colorSequenceIndex * goldenAngle) % 360;
+
+    		// Variación controlada
+    		const saturation = 70 + (colorSequenceIndex % 3) * 8;   // 70, 78, 86
+    		const lightness = 68 + (colorSequenceIndex % 4) * 6;    // 68, 74, 80, 86
+
+    		colorSequenceIndex += 1;
+
+    		return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+	    }
 
             function getColorForCategory(value) {
                 const safeValue =
@@ -1739,10 +1739,10 @@
                     220,
                     width - margin.left - margin.right,
                 );
-                const barHeight = 26;
-                const barGap = 12;
+                const barHeight = 22;
+                const barGap = 8;
                 const innerHeight = visible.length * (barHeight + barGap);
-                const height = innerHeight + margin.top + margin.bottom;
+	        const height = Math.min(600, innerHeight + margin.top + margin.bottom); // Límite máximo
 
                 const svg = d3
                     .create("svg")
@@ -1771,7 +1771,7 @@
                 g.append("g")
                     .call(d3.axisLeft(y).tickSize(0))
                     .selectAll("text")
-                    .style("font-size", "0.85rem")
+                    .style("font-size", "0.75rem")
                     .style("fill", "#374151");
                 g.select(".domain").remove();
 
@@ -1811,7 +1811,7 @@
                     .attr("x", (d) => Math.min(innerWidth - 4, x(d[1]) + 8))
                     .attr("y", y.bandwidth() / 2)
                     .attr("dy", "0.35em")
-                    .style("font-size", "0.82rem")
+                    .style("font-size", "0.72rem")
                     .style("fill", "#111827")
                     .text(
                         (d) =>
