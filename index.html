@@ -207,32 +207,28 @@
                 order: 3;
                 margin-top: 0.85rem;
             }
-            #visualizationCard {
-                order: 4;
-                margin-top: 0.75rem;
-            }
-            #advancedFiltersCard summary,
-            #visualizationCard summary {
+            #advancedFiltersCard summary {
                 cursor: pointer;
                 font-size: 0.9rem;
                 font-weight: 600;
                 color: #334155;
                 list-style: none;
             }
-            #advancedFiltersCard summary::-webkit-details-marker,
-            #visualizationCard summary::-webkit-details-marker {
+            #advancedFiltersCard summary::-webkit-details-marker {
                 display: none;
             }
-            #advancedFiltersCard summary::before,
-            #visualizationCard summary::before {
+            #advancedFiltersCard summary::before {
                 content: "▸";
                 display: inline-block;
                 margin-right: 0.45rem;
                 transition: transform 0.15s ease;
             }
-            #advancedFiltersCard[open] summary::before,
-            #visualizationCard[open] summary::before {
+            #advancedFiltersCard[open] summary::before {
                 transform: rotate(90deg);
+            }
+            .chart-heading-select {
+                min-width: 180px;
+                max-width: 260px;
             }
             
             /* Mejoras para los markers en mapa oscuro */
@@ -595,25 +591,6 @@
                 </div>
             </details>
 
-            <details class="card p-3 mb-4" id="visualizationCard">
-                <summary>Visualización</summary>
-                <div class="row g-3 mt-2 align-items-end">
-                    <div class="col-12 col-lg-6">
-                        <div class="d-flex flex-wrap align-items-center gap-2">
-                            <select
-                                id="metricField"
-                                class="form-select form-select-sm flex-grow-1 flex-lg-grow-0"
-                            ></select>
-                            <span class="text-muted small">por</span>
-                            <select
-                                id="aggregationField"
-                                class="form-select form-select-sm flex-grow-1 flex-lg-grow-0"
-                            ></select>
-                        </div>
-                    </div>
-                </div>
-            </details>
-
             <div class="row g-4" id="vizRow">
                 <div class="col-12 col-lg-6">
                     <div class="card p-3 h-100">
@@ -642,13 +619,21 @@
                     <div class="card p-3 h-100">
                         <div class="chart-container">
                             <div
-                                class="d-flex justify-content-between align-items-center mb-2"
+                                class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2"
                             >
-                                <h2 class="h5 mb-0" id="chartTitle"></h2>
-                                <span
-                                    class="text-muted small"
-                                    id="chartCaption"
-                                ></span>
+                                <select
+                                    id="metricField"
+                                    class="form-select form-select-sm chart-heading-select"
+                                    aria-label="Métrica del gráfico"
+                                ></select>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="text-muted small">Por</span>
+                                    <select
+                                        id="aggregationField"
+                                        class="form-select form-select-sm chart-heading-select"
+                                        aria-label="Agrupación del gráfico"
+                                    ></select>
+                                </div>
                             </div>
                             <div id="barChart" class="chart-wrapper w-100"></div>
                             <div id="powerDescription" class="power-description">
@@ -785,8 +770,6 @@
             const summarySpan = document.getElementById("summary");
             const mapCounterSpan = document.getElementById("mapCounter");
             const mapNote = document.getElementById("mapNote");
-            const chartCaption = document.getElementById("chartCaption");
-            const chartTitle = document.getElementById("chartTitle");
             const resetButton = document.getElementById("resetFilters");
             let availableYears = [];
 
@@ -826,14 +809,11 @@
             metricOptions.forEach((opt) => {
                 const option = document.createElement("option");
                 option.value = opt.value;
-                option.textContent = opt.label;
+                option.textContent = opt.chartTitle;
                 metricSelect.appendChild(option);
             });
             metricSelect.value = metricOptions[0].value;
             let currentMetric = metricOptions[0];
-            if (chartTitle) {
-                chartTitle.textContent = currentMetric.chartTitle;
-            }
 
             function setCurrentMetric(value) {
                 const match = metricOptions.find((opt) => opt.value === value);
@@ -1388,7 +1368,6 @@
                 }
                 
                 hoverHighlightSet = null;
-                chartTitle.textContent = currentMetric.chartTitle;
                 updateMetricDescription(); // Actualizar descripción según métrica
                 updateSummary(filtered);
                 renderMap(filtered, dimension);
@@ -1440,9 +1419,6 @@
             function renderBars(data, dimension) {
                 const container = document.getElementById("barChart");
                 container.innerHTML = "";
-                
-                const dimensionLabel = aggregationOptions.find((opt) => opt.value === dimension)?.label || "";
-                chartCaption.textContent = dimensionLabel ? `Por ${dimensionLabel.toLowerCase()}` : "";
                 
                 if (!data.length) {
                     container.innerHTML = '<div class="chart-empty">No hay datos para los filtros seleccionados.</div>';
